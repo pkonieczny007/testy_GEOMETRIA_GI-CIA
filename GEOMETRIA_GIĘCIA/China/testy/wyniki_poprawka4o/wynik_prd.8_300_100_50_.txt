@@ -1,0 +1,15 @@
+=== Wyniki dla pliku: prd.8_300_100_50_.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 8.0 mm
+Promień wewn.       = 11.19291 mm
+-------------------------------------------
+[MainPlane] => a=111.000000
+[SC00] => 64.702325
+[SC01] => 33.895236
+[DC00] => łuk=23.864968
+[DC01] => łuk=21.213305
+-------------------------------------------
+kąty
+90
+-100

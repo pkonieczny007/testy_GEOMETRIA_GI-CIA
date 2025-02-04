@@ -1,124 +1,97 @@
 import os
+import math
 import pandas as pd
 import xml.etree.ElementTree as ET
-import math
 
-# -------------------
-# Konfiguracja ścieżek
-# -------------------
-# Katalog, w którym znajdują się pliki .dld:
-katalog_plik_dld = r"C:\PYTHON\PROJEKT_GEOMETRIA_GIĘCIA\plik_dld"
-
-# Ścieżka do pliku wynik.xlsx (wygenerowanego przez MODUŁ1.ODCZYT_WYKAZUv1.2.py):
-sciezka_wynik = os.path.join(os.getcwd(), "wynik.xlsx")
-
-# -------------------
-# Funkcje pomocnicze
-# -------------------
-
-def read_dld_data(filepath):
+def calculate_out_dimension(external_dim, offset, angle):
     """
-    Odczytuje podstawowe dane z pliku .dld (XML).
-    Zwraca słownik z interesującymi nas wartościami:
-    - thickness
-    - inner_radius
-    - angles (lista kątów, w przykładzie tylko 1 kąt)
-    - a_out, b_out, a_in, b_in
-    - inne dane do ewentualnego rozbudowania
+    Oblicza wymiar OUT:
+    x_out = x_zewn + offset * tan((180 - kąt) / 2).
+    """
+    angle_rad = math.radians((180 - angle) / 2.0)
+    return round(external_dim + offset * math.tan(angle_rad), 2)
+
+def calculate_in_dimension(external_dim, inner_radius, thickness, angle):
+    """
+    Oblicza wymiar IN:
+    x_in = x_zewn + (łuk po neutralnej) / 2
+    gdzie łuk po neutralnej = (R_wewn + grubość/2) * (π * kąt / 180).
+    """
+    neutral_arc_length = (inner_radius + thickness / 2.0) * math.radians(angle)
+    return round(external_dim + neutral_arc_length / 2.0, 2)
+
+def parse_dld_file(dld_path):
+    """
+    Odczytuje i analizuje plik .dld (XML), zwracając słownik z wybranymi danymi
+    lub None, jeśli wystąpią błędy.
     """
 
-    tree = ET.parse(filepath)
-    root = tree.getroot()
+    if not os.path.isfile(dld_path):
+        return None
 
-    # Grubość arkusza
-    thickness_element = root.find(".//WorkpieceThickness")
-    if thickness_element is not None:
-        thickness = float(thickness_element.get("value", "0"))
-    else:
-        thickness = 0.0
+    try:
+        tree = ET.parse(dld_path)
+        root = tree.getroot()
+    except ET.ParseError:
+        return None
 
-    # Preferowany promień wewnętrzny
-    radius_element = root.find(".//PreferredInnerRadius")
-    if radius_element is not None:
-        inner_radius = float(radius_element.get("value", "0"))
-    else:
-        inner_radius = 0.0
+    # Odczyt grubosci
+    thickness_el = root.find(".//WorkpieceThickness")
+    thickness = float(thickness_el.get("value", "0")) if thickness_el is not None else 0.0
 
-    # Kąt (w przykładzie odczytujemy tylko 1. Jeśli jest wiele, można rozwinąć logikę)
-    angle_element = root.find(".//VDeformableComponentAngle")
-    if angle_element is not None:
-        angle = float(angle_element.get("value", "0"))
-    else:
-        angle = 0.0
+    # Odczyt promienia wewnetrznego
+    inner_radius_el = root.find(".//PreferredInnerRadius")
+    inner_radius = float(inner_radius_el.get("value", "0")) if inner_radius_el is not None else 0.0
 
-    # ---------------------------
-    # Poniższy fragment jest mocno zależny od struktury .dld:
-    # Odczytujemy np. dwa "StaticComponent" (a, b).
-    # Jeśli plik ma więcej segmentów, trzeba rozszerzyć wyszukiwanie.
-    # ---------------------------
+    # Odczyt kąta
+    angle_el = root.find(".//VDeformableComponentAngle")
+    angle = float(angle_el.get("value", "0")) if angle_el is not None else 0.0
 
-    # Przykład: odczyt wymiaru a (zewn.)
-    # main_plane_path to ścieżka Xpath, którą pokazywałeś w swoim skrypcie
-    main_plane_elem = root.find(".//StaticComponent[WorkpieceComponentName[@value='MainPlane']]/StaticComponentPart/StaticComponentHull")
-    if main_plane_elem is not None:
-        main_plane_value = main_plane_elem.get("value", "")
-        # Zwykle w "value" jest ciąg znaków np. "x y z a b c ..."
-        # Zakładamy, że 3-cim indeksem (index=2) jest wymiar a (zewn.)
-        parts = main_plane_value.split()
-        try:
-            external_a = float(parts[2])
-        except (ValueError, IndexError):
-            external_a = 0.0
-    else:
-        external_a = 0.0
+    # Szukamy "StaticComponent" -> "WorkpieceComponentName"
+    a_zewn = None
+    b_zewn = None
 
-    # Przykład: odczyt wymiaru b (zewn.)
-    sc00_elem = root.find(".//StaticComponent[WorkpieceComponentName[@value='SC00']]/StaticComponentPart/StaticComponentHull")
-    if sc00_elem is not None:
-        sc00_value = sc00_elem.get("value", "")
-        parts_b = sc00_value.split()
-        # Zakładamy, że 7-mym indeksem (index=6) jest wymiar b (zewn.)
-        try:
-            external_b = float(parts_b[6])
-        except (ValueError, IndexError):
-            external_b = 0.0
-    else:
-        external_b = 0.0
+    static_components = root.findall(".//StaticComponent")
+    for sc in static_components:
+        wcn = sc.find("WorkpieceComponentName")
+        if wcn is not None:
+            value = wcn.get("value", "").strip()
+            # MainPlane -> a_zewn
+            if value == "MainPlane":
+                mp_el = sc.find("./StaticComponentPart/StaticComponentHull")
+                if mp_el is not None:
+                    hull_value = mp_el.get("value", "")
+                    hull_parts = hull_value.split()
+                    if len(hull_parts) > 2:
+                        a_zewn = float(hull_parts[2])
+            # SC00 -> b_zewn
+            elif value == "SC00":
+                sc00_el = sc.find("./StaticComponentPart/StaticComponentHull")
+                if sc00_el is not None:
+                    hull_value = sc00_el.get("value", "")
+                    hull_parts = hull_value.split()
+                    if len(hull_parts) > 6:
+                        b_zewn = float(hull_parts[6])
 
-    # Funkcje pomocnicze do obliczeń out/in
-    def calculate_out_dimension(external_dim, offset, angle):
-        """ x_out = x_zewn + offset * tan((180 - kąt)/2) """
-        angle_rad = math.radians((180 - angle) / 2)
-        return round(external_dim + offset * math.tan(angle_rad), 2)
+    if a_zewn is None or b_zewn is None:
+        # Brak kluczowych danych
+        return None
 
-    def calculate_in_dimension(external_dim, inner_radius, thickness, angle):
-        """ x_in = x_zewn + (łuk po neutralnej)/2, gdzie:
-            łuk = (R_wewn + grubość/2) * (pi * kąt/180)
-        """
-        neutral_arc_length = (inner_radius + thickness/2) * math.radians(angle)
-        return round(external_dim + neutral_arc_length/2, 2)
-
-    # offset = (r + g)
     offset = inner_radius + thickness
+    a_out = calculate_out_dimension(a_zewn, offset, angle)
+    b_out = calculate_out_dimension(b_zewn, offset, angle)
+    a_in = calculate_in_dimension(a_zewn, inner_radius, thickness, angle)
+    b_in = calculate_in_dimension(b_zewn, inner_radius, thickness, angle)
 
-    # Obliczenia OUT
-    a_out = calculate_out_dimension(external_a, offset, angle)
-    b_out = calculate_out_dimension(external_b, offset, angle)
+    neutral_arc_length = (inner_radius + thickness / 2.0) * math.radians(angle)
+    rozwiniecie = round(neutral_arc_length, 2)
 
-    # Obliczenia IN
-    a_in = calculate_in_dimension(external_a, inner_radius, thickness, angle)
-    b_in = calculate_in_dimension(external_b, inner_radius, thickness, angle)
-
-    # Przykładowe wyliczenie "Rozwinięcia" (np. suma a_in + b_in, do modyfikacji wg potrzeb)
-    rozwiniecie = round(a_in + b_in, 2)
-
-    # Zwracamy w słowniku kluczowe dane
     return {
-        "thickness": thickness,
-        "inner_radius": inner_radius,
-        "angles": [angle],  # wstawiamy listę, gdybyśmy chcieli rozbudować
-        "external_a": external_a,
-        "external_b": external_b,
+        "grubosc": thickness,
+        "promien_wewn": inner_radius,
+        "kat": angle,
+        "a_zewn": a_zewn,
+        "b_zewn": b_zewn,
         "a_out": a_out,
         "b_out": b_out,
         "a_in": a_in,
@@ -126,95 +99,127 @@ def read_dld_data(filepath):
         "rozwiniecie": rozwiniecie,
     }
 
-# -------------------
-# Główny skrypt
-# -------------------
-
 def main():
-    # Wczytujemy plik wynik.xlsx
-    if not os.path.isfile(sciezka_wynik):
-        print(f"Nie znaleziono pliku Excel: {sciezka_wynik}")
+    # Wczytanie pliku wynik.xlsx
+    sciezka_we = os.path.join(os.getcwd(), "wynik.xlsx")
+    if not os.path.isfile(sciezka_we):
+        print(f"Nie znaleziono pliku wejściowego: {sciezka_we}")
         return
 
-    df = pd.read_excel(sciezka_wynik)
+    df = pd.read_excel(sciezka_we)
 
-    # Upewniamy się, że mamy w DataFrame kolumny docelowe
-    # (jeśli nie ma – tworzymy puste)
-    kolumny_docelowe = [
+    # Upewniamy się, że kolumny istnieją i mają typ 'object' (tekstowy)
+    nowe_kolumny = [
         "dane_plik_dld",
         "Długości a/b/c/d.../n",
         "Kąty",
         "WorkpieceDimensions - Outside, Inside",
         "Grubość",
         "Promień wewn.",
-        "Rozwinięcie"
+        "Rozwinięcie",
     ]
-    for kol in kolumny_docelowe:
+    for kol in nowe_kolumny:
         if kol not in df.columns:
             df[kol] = ""
+        # Wymuszamy typ 'object' (co w Pandas zwykle pozwala na przechowywanie dowolnych stringów)
+        df[kol] = df[kol].astype("object")
 
-    # Iterujemy po wierszach, sprawdzając kolumnę plik_dld
+    folder_dld = os.path.join(os.getcwd(), "plik_dld")
+    if not os.path.isdir(folder_dld):
+        print(f"Brak folderu plik_dld: {folder_dld}")
+        return
+
+    # (opcjonalnie) folder tmp na pliki tekstowe
+    folder_tmp = os.path.join(folder_dld, "tmp")
+    if not os.path.isdir(folder_tmp):
+        os.makedirs(folder_tmp)
+
     for idx, row in df.iterrows():
-        plik_dld_bez_ext = str(row["plik_dld"]).strip()
+        plik_dld_nazwa = row.get("plik_dld", "")
 
-        # Jeśli brak nazwy pliku, pomijamy
-        if not plik_dld_bez_ext or plik_dld_bez_ext.lower() in ["nan", "none"]:
+        # Pomijamy, jeśli puste lub NaN
+        if pd.isna(plik_dld_nazwa):
+            continue
+        plik_dld_nazwa = str(plik_dld_nazwa).strip()
+        if not plik_dld_nazwa:
             continue
 
-        # Składamy pełną ścieżkę do pliku .dld
-        dld_filepath = os.path.join(katalog_plik_dld, plik_dld_bez_ext + ".dld")
+        # Dodaj rozszerzenie .dld, jeśli trzeba
+        if not plik_dld_nazwa.lower().endswith(".dld"):
+            plik_dld_nazwa += ".dld"
 
-        if os.path.isfile(dld_filepath):
+        sciezka_dld = os.path.join(folder_dld, plik_dld_nazwa)
+        if not os.path.isfile(sciezka_dld):
+            # Jeśli nie ma takiego pliku, zapisz info i przejdź dalej
             try:
-                # Parsujemy plik .dld
-                data = read_dld_data(dld_filepath)
+                df.at[idx, "dane_plik_dld"] = f"Brak pliku: {plik_dld_nazwa}"
+            except Exception as e:
+                # Jeśli z jakiegoś powodu wystąpi błąd zapisu, pomiń
+                print(f"Błąd przy zapisie 'Brak pliku': {e}")
+            continue
 
-                # Uzupełniamy kolumny w DataFrame
-                # 1) dane_plik_dld – np. krótkie podsumowanie
-                df.at[idx, "dane_plik_dld"] = (
-                    f"OK: {plik_dld_bez_ext}.dld "
-                    f"(g={data['thickness']}, r={data['inner_radius']}, kąt={data['angles']})"
-                )
+        dane_dld = parse_dld_file(sciezka_dld)
+        if dane_dld is None:
+            try:
+                df.at[idx, "dane_plik_dld"] = f"Błąd parsowania / brak danych: {plik_dld_nazwa}"
+            except Exception as e:
+                print(f"Błąd przy zapisie 'Błąd parsowania': {e}")
+            continue
 
-                # 2) Długości a/b/c/d.../n (tutaj przykład a_out, b_out, a_in, b_in)
-                dlugosci_txt = (
-                    f"a_out={data['a_out']} mm; b_out={data['b_out']} mm; "
-                    f"a_in={data['a_in']} mm; b_in={data['b_in']} mm"
-                )
-                df.at[idx, "Długości a/b/c/d.../n"] = dlugosci_txt
+        # Spróbujmy wypełnić kolumny
+        try:
+            opis_txt = (
+                f"Plik: {plik_dld_nazwa}, "
+                f"grubość={dane_dld['grubosc']} mm, "
+                f"promień_wewn={dane_dld['promien_wewn']} mm, "
+                f"kąt={dane_dld['kat']} st."
+            )
+            df.at[idx, "dane_plik_dld"] = opis_txt
 
-                # 3) Kąty
-                katy_txt = ", ".join([str(k) for k in data["angles"]])
-                df.at[idx, "Kąty"] = katy_txt
+            dlugosci_txt = (
+                f"a_zewn={dane_dld['a_zewn']}, a_in={dane_dld['a_in']}, a_out={dane_dld['a_out']}; "
+                f"b_zewn={dane_dld['b_zewn']}, b_in={dane_dld['b_in']}, b_out={dane_dld['b_out']}"
+            )
+            df.at[idx, "Długości a/b/c/d.../n"] = dlugosci_txt
+            df.at[idx, "Kąty"] = str(dane_dld["kat"])
+            df.at[idx, "WorkpieceDimensions - Outside, Inside"] = (
+                f"Outside(a,b)=({dane_dld['a_out']},{dane_dld['b_out']}), "
+                f"Inside(a,b)=({dane_dld['a_in']},{dane_dld['b_in']})"
+            )
+            df.at[idx, "Grubość"] = str(dane_dld["grubosc"])  # zapis jako tekst
+            df.at[idx, "Promień wewn."] = str(dane_dld["promien_wewn"])
+            df.at[idx, "Rozwinięcie"] = str(dane_dld["rozwiniecie"])
 
-                # 4) WorkpieceDimensions - Outside, Inside
-                wi_txt = (
-                    f"Outside: a={data['external_a']:.2f}, b={data['external_b']:.2f}; "
-                    f"Inside: a_in={data['a_in']}, b_in={data['b_in']}"
-                )
-                df.at[idx, "WorkpieceDimensions - Outside, Inside"] = wi_txt
+            # (opcjonalnie) plik tekstowy z danymi
+            nazwa_txt = os.path.splitext(plik_dld_nazwa)[0] + ".txt"
+            sciezka_txt = os.path.join(folder_tmp, nazwa_txt)
+            with open(sciezka_txt, "w", encoding="utf-8") as f:
+                f.write("=== DANE ODCZYTANE Z PLIKU DLD ===\n")
+                f.write(f"Nazwa pliku DLD: {plik_dld_nazwa}\n")
+                f.write(f"Grubość: {dane_dld['grubosc']} mm\n")
+                f.write(f"Promień wewn.: {dane_dld['promien_wewn']} mm\n")
+                f.write(f"Kąt: {dane_dld['kat']} st.\n")
+                f.write("------------------------------------\n")
+                f.write(f"a (zewn.) = {dane_dld['a_zewn']} mm\n")
+                f.write(f"b (zewn.) = {dane_dld['b_zewn']} mm\n")
+                f.write("------------------------------------\n")
+                f.write(f"a (out) = {dane_dld['a_out']} mm\n")
+                f.write(f"b (out) = {dane_dld['b_out']} mm\n")
+                f.write("-----\n")
+                f.write(f"a (in)  = {dane_dld['a_in']} mm\n")
+                f.write(f"b (in)  = {dane_dld['b_in']} mm\n")
+                f.write("-----\n")
+                f.write(f"Rozwinięcie (łuk po neutralnej) = {dane_dld['rozwiniecie']} mm\n")
 
-                # 5) Grubość
-                df.at[idx, "Grubość"] = data["thickness"]
+        except Exception as e:
+            # Jeśli wystąpił błąd przy przypisywaniu kolumn, zapiszmy go w 'dane_plik_dld' i idźmy dalej
+            df.at[idx, "dane_plik_dld"] = f"Wystąpił błąd zapisu danych: {e}"
+            continue
 
-                # 6) Promień wewn.
-                df.at[idx, "Promień wewn."] = data["inner_radius"]
-
-                # 7) Rozwinięcie
-                df.at[idx, "Rozwinięcie"] = data["rozwiniecie"]
-
-            except ET.ParseError as e:
-                df.at[idx, "dane_plik_dld"] = f"Błąd parsowania XML: {e}"
-            except Exception as ex:
-                df.at[idx, "dane_plik_dld"] = f"Błąd: {ex}"
-        else:
-            # Jeśli nie ma pliku .dld, wpisujemy informację
-            df.at[idx, "dane_plik_dld"] = f"Brak pliku: {plik_dld_bez_ext}.dld"
-
-    # Zapisujemy zaktualizowany plik ponownie do wynik.xlsx
-    df.to_excel(sciezka_wynik, index=False)
-    print(f"Zaktualizowano dane w pliku: {sciezka_wynik}")
-
+    # Zapis do pliku końcowego
+    sciezka_wy = os.path.join(os.getcwd(), "wynik_dane.xlsx")
+    df.to_excel(sciezka_wy, index=False)
+    print(f"Zakończono. Wyniki w pliku: {sciezka_wy}")
 
 if __name__ == "__main__":
     main()

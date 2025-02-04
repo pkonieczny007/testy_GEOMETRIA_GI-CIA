@@ -1,0 +1,18 @@
+=== Wyniki dla pliku: prd.2_600_250_20_15.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 2.0 mm
+Promień wewn.       = 7.54354 mm
+-------------------------------------------
+[MainPlane] => a=200.000000
+[SC00] => 200.000000
+[SC01] => 11.260306
+[SC02] => 11.033909
+[DC00] => łuk=5.927562
+[DC01] => łuk=5.927562
+[DC02] => łuk=6.734783
+-------------------------------------------
+kąty
+-90
+90
+135

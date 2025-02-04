@@ -163,7 +163,7 @@ def main():
         print(f"Podany folder nie istnieje: {folder}")
         return
 
-    output_dir = os.path.join(folder, "wyniki1")
+    output_dir = os.path.join(folder, "wyniki_poprawka4o")
     os.makedirs(output_dir, exist_ok=True)
 
     pattern = os.path.join(folder, "*.dld")
