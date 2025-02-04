@@ -1,0 +1,236 @@
+Utworz skrypt ktory pobiera dane z pliku wynik.xlsx utworzony przez 
+MODUŁ1.ODCZYT_WYKAZUv1.2.py
+
+sprawdza elementy z katalogu plik_dld i kolumny plik_dld
+przeszukiwanie po nazwie z kolumny plik_dld+rozszerzenie ".dld"
+
+następnie wpisuje do kolumny:
+dane_plik_dld
+
+
+
+
+tworzy Kolumny:
+Długości a/b/c/d.../n
+Kąty 
+WorkpieceDimensions - Outside, Inside
+Grubość
+Promień wewn.
+Rozwinięcie
+
+Dane uzupełnia analizując plik dld.
+
+Poniżeż skrypty 1 dotyczy wykazu. wykaz wynik.xlsx tworzony jest przez pierwszy skrypt. 
+2 skrypt to logika odczytu pliku dld (mozesz poprawic jezeli widzisz blad)
+
+Skrypt MODUŁ1.ODCZYT_WYKAZUv1.2
+import os
+import pandas as pd
+import re
+from datetime import datetime
+
+# Ścieżka katalogu z plikami gięcia (zmień na właściwą)
+katalog_giecie = r"C:\PYTHON\PROJEKT_GEOMETRIA_GIĘCIA\baza"
+
+# Domyślna ścieżka pliku wykazu
+sciezka_wykazu = os.path.join(os.getcwd(), "wykaz.xlsx")
+
+# Wczytanie pliku Excel
+df = pd.read_excel(sciezka_wykazu)
+
+# Zachowanie wszystkich kolumn oryginalnego wykazu
+oryginalne_kolumny = df.columns.tolist()
+
+# Tworzenie dodatkowych kolumn (jeśli ich nie ma, aby uniknąć błędów)
+nowe_kolumny = [
+    "plik_dld", "dane_plik_dld",
+    "propozycja1", "dane_propozycja1",
+    "propozycja2", "dane_propozycja2",
+    "propozycja3", "dane_propozycja3",
+    "inne_propozycja", "dane_inne_propozycja"
+]
+
+for kol in nowe_kolumny:
+    if kol not in df.columns:
+        df[kol] = ""
+
+# Filtrujemy elementy gięte
+df_giete = df[df["TECHNOLOGIA"].astype(str).str.contains(r'\bG\b|\bGS\b|\bGSO\b', na=False, regex=True)].copy()
+
+# Funkcja do ekstrakcji rysunku i pozycji z NAZWA
+def extract_drawing_and_position(nazwa):
+    if isinstance(nazwa, str):  # Unikamy błędów, jeśli NAZWA jest pusta
+        parts = nazwa.split("_")
+        if len(parts) >= 4:
+            rysunek = parts[2].replace("SL", "")  # Pominięcie "SL"
+            pozycja = parts[3]
+            return rysunek, pozycja
+    return None, None
+
+# Funkcja do znajdowania plików .dld
+def find_dld_files(rysunek, pozycja):
+    matching_files = []
+    
+    # Przeszukiwanie wszystkich podfolderów
+    for root, _, files in os.walk(katalog_giecie):
+        for file in files:
+            if file.endswith(".dld") and rysunek in file:
+                full_path = os.path.join(root, file)
+                file_date = datetime.fromtimestamp(os.path.getmtime(full_path))
+                file_name_without_ext = os.path.splitext(file)[0]  # Usunięcie rozszerzenia .dld
+                matching_files.append((full_path, file_name_without_ext, file_date))
+    
+    # Sortowanie od najnowszych
+    matching_files.sort(key=lambda x: x[2], reverse=True)
+
+    # Grupowanie plików według pozycji
+    propozycje = []
+    inne = []
+    
+    for path, name, date in matching_files:
+        if pozycja in name:
+            propozycje.append((name, date))
+        else:
+            inne.append((name, date))
+
+    return propozycje, inne
+
+# Przetwarzanie każdego elementu giętego
+for index, row in df_giete.iterrows():
+    nazwa = row["NAZWA"]
+    rysunek, pozycja = extract_drawing_and_position(nazwa)
+
+    if rysunek:
+        propozycje, inne = find_dld_files(rysunek, pozycja)
+
+        # Wpisanie wyników do tabeli
+        if propozycje:
+            df.at[index, "plik_dld"] = propozycje[0][0]  # Najnowszy plik (bez rozszerzenia .dld)
+            if len(propozycje) > 1:
+                df.at[index, "propozycja1"] = propozycje[1][0]
+            if len(propozycje) > 2:
+                df.at[index, "propozycja2"] = propozycje[2][0]
+            if len(propozycje) > 3:
+                df.at[index, "propozycja3"] = propozycje[3][0]
+        
+        # Wpisanie innych propozycji
+        if inne:
+            df.at[index, "inne_propozycja"] = ", ".join([x[0] for x in inne[:5]])
+
+# Dodatkowy warunek: uzupełnienie pustych wartości plik_dld
+for index, row in df.iterrows():
+    if not row["plik_dld"] and row["inne_propozycja"]:
+        pierwsza_inna = row["inne_propozycja"].split(", ")[0]  # Wybór pierwszego elementu
+        df.at[index, "plik_dld"] = pierwsza_inna
+
+# Zapis wyników do pliku Excel, zachowując oryginalny format
+wynik_sciezka = os.path.join(os.getcwd(), "wynik.xlsx")
+df.to_excel(wynik_sciezka, index=False)
+
+print(f"Wyniki zapisane w: {wynik_sciezka}")
+
+
+
+skrypt logiki
+
+import xml.etree.ElementTree as ET
+import os
+import re
+import glob
+import sys
+import string
+import math
+
+def calculate_out_dimension(external_dim, offset, angle):
+    """
+    Oblicza długość zewnętrzną (out) wg wzoru:
+    x_out = x_zewn + offset * tan((180 - kąt) / 2)
+    """
+    angle_rad = math.radians((180 - angle) / 2)
+    return round(external_dim + offset * math.tan(angle_rad))
+
+def calculate_in_dimension(external_dim, inner_radius, thickness, angle):
+    """
+    Oblicza długość wewnętrzną (in) wg wzoru:
+    x_in = x_zewn + (łuk po neutralnej) / 2
+    gdzie łuk po neutralnej = (R_wewn + 1/2 * grubość) * (pi * kąt / 180)
+    """
+    neutral_arc_length = (inner_radius + thickness / 2) * math.radians(angle)
+    return round(external_dim + neutral_arc_length / 2)
+
+def process_file(filename, output_dir):
+    if not os.path.isfile(filename):
+        print(f"Brak pliku: {filename}")
+        return
+
+    try:
+        tree = ET.parse(filename)
+        root = tree.getroot()
+    except ET.ParseError as e:
+        print(f"Błąd parsowania pliku {filename}: {e}")
+        return
+
+    # Pobranie wartości grubości i promienia wewnętrznego
+    thickness = float(root.find(".//WorkpieceThickness").get("value", "0"))
+    inner_radius = float(root.find(".//PreferredInnerRadius").get("value", "0"))
+
+    # Pobranie wartości kąta
+    angle = float(root.find(".//VDeformableComponentAngle").get("value", "0"))
+
+    # Pobranie offsetu (r+g)
+    offset = inner_radius + thickness
+
+    # Pobranie wymiarów z pliku
+    external_a = float(root.find(".//StaticComponent[WorkpieceComponentName[@value='MainPlane']]/StaticComponentPart/StaticComponentHull").get("value", "").split()[2])
+    external_b = float(root.find(".//StaticComponent[WorkpieceComponentName[@value='SC00']]/StaticComponentPart/StaticComponentHull").get("value", "").split()[6])
+
+    # Obliczenia wymiarów OUT
+    a_out = calculate_out_dimension(external_a, offset, angle)
+    b_out = calculate_out_dimension(external_b, offset, angle)
+
+    # Obliczenia wymiarów IN
+    a_in = calculate_in_dimension(external_a, inner_radius, thickness, angle)
+    b_in = calculate_in_dimension(external_b, inner_radius, thickness, angle)
+
+    # Wyniki
+    print(f"=== Wyniki dla pliku: {os.path.basename(filename)} ===")
+    print(f"Grubość             = {thickness} mm")
+    print(f"Promień wewn.       = {inner_radius} mm")
+    print("-------------------------------------------")
+    print(f"a (zewn.) = {external_a:.6f} mm")
+    print(f"b (zewn.) = {external_b:.6f} mm")
+    print("-------------------------------------------")
+    print(f"a (out) = {a_out}")
+    print(f"b (out) = {b_out}")
+    print("-----")
+    print(f"a (in) = {a_in}")
+    print(f"b (in) = {b_in}")
+    print("-----")
+    print(f"kąty")
+    print(f"{int(angle)}")
+
+
+def main():
+    # Folder wejściowy
+    if len(sys.argv) > 1:
+        folder = sys.argv[1]
+    else:
+        folder = os.getcwd()
+
+    if not os.path.isdir(folder):
+        print(f"Podany folder nie istnieje: {folder}")
+        return
+
+    # Przetwarzanie plików
+    pattern = os.path.join(folder, "*.dld")
+    files = glob.glob(pattern)
+
+    if not files:
+        print(f"Nie znaleziono plików .dld w folderze: {folder}")
+        return
+
+    for file in files:
+        process_file(file, folder)
+
+if __name__ == "__main__":
+    main()
