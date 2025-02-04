@@ -1,0 +1,2 @@
+git remote add origin https://github.com/pkonieczny007/testy_GEOMETRIA_GI-CIA
+git push -u origin main
