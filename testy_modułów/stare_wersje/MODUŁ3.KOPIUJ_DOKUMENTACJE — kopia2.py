@@ -8,14 +8,14 @@ try:
     from openpyxl import load_workbook
     OPENPYXL_INSTALLED = True
 except ImportError:
-    # Jeśli openpyxl nie jest zainstalowane, skrypt w dalszym ciągu może działać bez tej funkcji
+    # Jeśli openpyxl nie jest zainstalowane, skrypt zadziała bez tej funkcji
     OPENPYXL_INSTALLED = False
 
 # Domyślne wartości
 chosen_file = 'dane.txt'                # Domyślny plik z danymi rysunków
 chosen_folder = None                    # Folder źródłowy (wybierany przyciskiem)
 chosen_destination_folder = None        # Folder docelowy (wybierany przyciskiem)
-default_folder_name = 'Pobrane_Pliki'   # Domyślna nazwa folderu docelowego
+default_folder_name = 'Pobrane_Pliki'   # Domyślna nazwa (używana także w docelowym okienku)
 
 # ===========================================================
 # Funkcje pomocnicze
@@ -37,7 +37,8 @@ def wczytaj_rysunki(plik):
 
 def przeksztalc_liste(lista):
     """
-    Dodatkowe przetwarzanie wczytanej listy. Na razie tylko strip().
+    Ewentualne dodatkowe przetwarzanie wczytanej listy.
+    Obecnie tylko strip().
     """
     przeksztalcona_lista = []
     for element in lista:
@@ -85,16 +86,12 @@ def choose_destination_folder():
 
 def utworz_plik_dane_z_xlsx():
     """
-    Tworzy/uzupełnia plik dane.txt na podstawie pliku XLSX.
-    
-    - Gdy check „pliki_dld” jest zaznaczony: 
-      pobiera wartości z kolumny 'plik_dld' i zapisuje do dane.txt.
-    - Gdy check „pliki_dld” nie jest zaznaczony:
-      sprawdza kolumnę 'TECHNOLOGIA' i filtruje wg wybranych kryteriów:
-         * gięcie  -> 'G' w polu TECHNOLOGIA
-         * spawanie -> 'S' w polu TECHNOLOGIA
-         * nie spawane -> brak 'S' w polu TECHNOLOGIA
-      Zapisuje do dane.txt wartości z kolumny 'Zeinr'.
+    Tworzy plik dane.txt na podstawie pliku wykaz.xlsx.
+    Filtruje wiersze, gdzie kolumna 'TECHNOLOGIA' zawiera znak 'G',
+    a następnie pobiera wartość z kolumny 'Zeinr' i zapisuje do dane.txt.
+    W tym przykładzie zakładamy, że:
+      - nazwa kolumny z technologią to 'TECHNOLOGIA'
+      - nazwa kolumny z numerem rysunku to 'Zeinr'
     """
     if not OPENPYXL_INSTALLED:
         result_box.config(state=tk.NORMAL)
@@ -104,7 +101,7 @@ def utworz_plik_dane_z_xlsx():
 
     xlsx_path = filedialog.askopenfilename(
         initialdir="/",
-        title="Wybierz plik XLSX",
+        title="Wybierz plik XLSX (wykaz.xlsx)",
         filetypes=[('Excel files', '*.xlsx'), ('All files', '*.*')]
     )
     if not xlsx_path:
@@ -114,73 +111,32 @@ def utworz_plik_dane_z_xlsx():
     wb = load_workbook(xlsx_path)
     sheet = wb.active  # zakładamy, że dane są na pierwszym arkuszu
 
-    # Wczytujemy pierwszy (nagłówkowy) wiersz do listy, by sprawdzić nazwy kolumn
+    # Szukamy indeksów kolumn: TECHNOLOGIA i Zeinr
     header_row = next(sheet.iter_rows(min_row=1, max_row=1, values_only=True))
+    try:
+        tech_col_idx = header_row.index("TECHNOLOGIA")
+        zeinr_col_idx = header_row.index("Zeinr")
+    except ValueError:
+        # Jeśli nie ma takich kolumn
+        result_box.config(state=tk.NORMAL)
+        result_box.insert(tk.END, "Nie znaleziono wymaganych kolumn: 'TECHNOLOGIA' i/lub 'Zeinr' w pliku.\n")
+        result_box.config(state=tk.DISABLED)
+        return
 
-    # Jeśli checkbox pliki_dld jest zaznaczony, szukamy kolumny plik_dld
-    if pliki_dld_var.get():
-        try:
-            plik_dld_col_idx = header_row.index("plik_dld")
-        except ValueError:
-            result_box.config(state=tk.NORMAL)
-            result_box.insert(tk.END, "Nie znaleziono kolumny 'plik_dld' w pliku.\n")
-            result_box.config(state=tk.DISABLED)
-            return
+    # Otwieramy (lub tworzymy nowy) plik dane.txt
+    with open("dane.txt", "w", encoding="utf-8") as f:
+        # Iterujemy od drugiego wiersza (zakładamy, że pierwszy to nagłówki)
+        for row in sheet.iter_rows(min_row=2, values_only=True):
+            technology = row[tech_col_idx]
+            zeinr = row[zeinr_col_idx]
 
-        with open("dane.txt", "w", encoding="utf-8") as f:
-            # Przechodzimy po wierszach (od 2, bo 1 to nagłówek)
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                value_dld = row[plik_dld_col_idx]
-                if value_dld:  # jeśli kolumna plik_dld nie jest pusta
-                    f.write(str(value_dld).strip() + "\n")
-
-        komunikat = "Plik dane.txt został utworzony z kolumny 'plik_dld'.\n"
-
-    else:
-        # Jeśli pliki_dld NIE jest zaznaczone, to działamy wg kolumny TECHNOLOGIA + Zeinr
-        try:
-            tech_col_idx = header_row.index("TECHNOLOGIA")
-            zeinr_col_idx = header_row.index("Zeinr")
-        except ValueError:
-            # Jeśli nie ma takich kolumn
-            result_box.config(state=tk.NORMAL)
-            result_box.insert(tk.END, "Nie znaleziono wymaganych kolumn: 'TECHNOLOGIA' i/lub 'Zeinr' w pliku.\n")
-            result_box.config(state=tk.DISABLED)
-            return
-
-        # Pobieramy aktualne wybrane kryterium z radiobuttona
-        kryterium = kryterium_var.get()
-
-        with open("dane.txt", "w", encoding="utf-8") as f:
-            for row in sheet.iter_rows(min_row=2, values_only=True):
-                technology = row[tech_col_idx]
-                zeinr = row[zeinr_col_idx]
-
-                # Upewniamy się, że mamy poprawne wartości w wierszu
-                if not technology or not zeinr:
-                    continue
-
-                tech_upper = str(technology).upper()
-
-                if kryterium == "giecie":
-                    # Szukamy litery G w technologii
-                    if 'G' in tech_upper:
-                        f.write(str(zeinr).strip() + "\n")
-
-                elif kryterium == "spawanie":
-                    # Szukamy litery S w technologii
-                    if 'S' in tech_upper:
-                        f.write(str(zeinr).strip() + "\n")
-
-                elif kryterium == "nie_spawane":
-                    # Szukamy tych, co NIE mają litery S
-                    if 'S' not in tech_upper:
-                        f.write(str(zeinr).strip() + "\n")
-
-        komunikat = (f"Plik dane.txt został utworzony/uzupełniony na podstawie kolumny TECHNOLOGIA (kryterium: {kryterium}).\n")
+            # Sprawdzamy, czy w polu technologii jest litera 'G'
+            if technology and 'G' in technology.upper():
+                if zeinr:
+                    f.write(str(zeinr) + "\n")
 
     result_box.config(state=tk.NORMAL)
-    result_box.insert(tk.END, komunikat)
+    result_box.insert(tk.END, "Plik dane.txt został utworzony/uzupełniony na podstawie wykazu XLSX.\n")
     result_box.config(state=tk.DISABLED)
 
 def process_list():
@@ -211,7 +167,7 @@ def process_list():
 
     # Pobieramy wybrane rozszerzenia z checkboxów
     wybrane_rozszerzenia = []
-    if pdf_var.get():
+    if pdf_var.get(): 
         wybrane_rozszerzenia.append(".pdf")
     if dxf_var.get():
         wybrane_rozszerzenia.append(".dxf")
@@ -279,66 +235,38 @@ def process_list():
 # ===========================================================
 window = tk.Tk()
 window.title("Przetwarzanie listy rysunków - GEOMETRIA GIĘCIA")
-window.geometry("620x700")
+window.geometry("600x600")
 
 # Pole tekstowe (instrukcje / opis)
 text_box = tk.Label(
     window, 
     text=(
         "Instrukcja:\n"
-        "1. Wybierz (opcjonalnie) plik XLSX i utwórz dane.txt z kolumn Zeinr / plik_dld.\n"
-        "2. Wybierz (opcjonalnie) plik TXT z listą rysunków (domyślnie dane.txt).\n"
-        "3. Wskaż 'Katalog z plikami' (folder źródłowy).\n"
-        "4. Ustaw lub wybierz 'Katalog docelowy'.\n"
+        "1. (Opcjonalne) Kliknij 'Wczytaj XLSX i utwórz dane.txt', aby wygenerować plik z nazwami rysunków.\n"
+        "2. (Opcjonalne) Wybierz inny plik tekstowy z listą rysunków (domyślnie dane.txt).\n"
+        "3. Kliknij 'Katalog z plikami', aby wskazać folder źródłowy.\n"
+        "4. Ustaw lub wybierz folder docelowy.\n"
         "5. Zaznacz wymagane rozszerzenia plików.\n"
         "6. Kliknij 'Przetwórz', aby skopiować znalezione rysunki."
     )
 )
 text_box.pack(pady=5)
 
-# -------------------------------
-# KRYTERIA WYBORU DANYCH Z XLSX
-# -------------------------------
-kryterium_frame = tk.LabelFrame(window, text="Kryterium generowania pliku dane.txt")
-kryterium_frame.pack(padx=5, pady=5, fill="x")
+# Przycisk do tworzenia pliku dane.txt z wykaz.xlsx
+xlsx_to_txt_button = tk.Button(window, text="Wczytaj XLSX i utwórz dane.txt", command=utworz_plik_dane_z_xlsx)
+xlsx_to_txt_button.pack(pady=2)
 
-# Radiobuttony - wybór kryterium wg kolumny TECHNOLOGIA:
-kryterium_var = tk.StringVar(value="giecie")  # domyślnie "giecie"
-
-radio_giecie = tk.Radiobutton(kryterium_frame, text="gięcie (G, GS, GSO)", variable=kryterium_var, value="giecie")
-radio_spawanie = tk.Radiobutton(kryterium_frame, text="spawanie (S, SO, GSO, GS)", variable=kryterium_var, value="spawanie")
-radio_nie_spawane = tk.Radiobutton(kryterium_frame, text="nie spawane (bez S)", variable=kryterium_var, value="nie_spawane")
-
-radio_giecie.pack(anchor="w")
-radio_spawanie.pack(anchor="w")
-radio_nie_spawane.pack(anchor="w")
-
-# Checkbox - czy generować z kolumny 'plik_dld'
-pliki_dld_var = tk.BooleanVar(value=False)
-pliki_dld_check = tk.Checkbutton(kryterium_frame, text="pliki_dld (z kolumny 'plik_dld' - wynik.xlsx)", variable=pliki_dld_var)
-pliki_dld_check.pack(anchor="w", pady=2)
-
-# Przycisk do tworzenia pliku dane.txt z XLSX
-xlsx_to_txt_button = tk.Button(kryterium_frame, text="Wczytaj XLSX i utwórz dane.txt", command=utworz_plik_dane_z_xlsx)
-xlsx_to_txt_button.pack(pady=5)
-
-# -------------------------------
-# WYBÓR PLIKU TXT (opcjonalnie)
-# -------------------------------
+# Przycisk do wybrania pliku txt
 choose_file_button = tk.Button(window, text="DANE - Wybierz plik txt", command=choose_file)
-choose_file_button.pack(pady=5)
+choose_file_button.pack(pady=2)
 
-# -------------------------------
-# WYBÓR KATALOGU ŹRÓDŁOWEGO
-# -------------------------------
+# Przycisk do wybrania katalogu źródłowego (z plikami)
 source_button = tk.Button(window, text="Katalog z plikami", command=choose_folder)
-source_button.pack(pady=5)
+source_button.pack(pady=2)
 
-# -------------------------------
-# KATALOG DOCELOWY
-# -------------------------------
+# Katalog docelowy – ramka z etykietą, okienkiem i przyciskiem
 destination_folder_frame = tk.Frame(window)
-destination_folder_frame.pack(pady=5)
+destination_folder_frame.pack(pady=2)
 
 destination_label = tk.Label(destination_folder_frame, text="Katalog docelowy:")
 destination_label.pack(side=tk.LEFT)
@@ -350,9 +278,7 @@ destination_folder_entry.pack(side=tk.LEFT, padx=5)
 destination_button = tk.Button(destination_folder_frame, text="Wybierz folder", command=choose_destination_folder)
 destination_button.pack(side=tk.LEFT)
 
-# -------------------------------
-# CHECKBOXY ROZSZERZEŃ
-# -------------------------------
+# Checkboxy rozszerzeń
 extensions_frame = tk.Frame(window)
 extensions_frame.pack(pady=5)
 
@@ -368,15 +294,11 @@ tk.Checkbutton(extensions_frame, text=".dwg", variable=dwg_var).pack(side=tk.LEF
 tk.Checkbutton(extensions_frame, text=".tif", variable=tif_var).pack(side=tk.LEFT)
 tk.Checkbutton(extensions_frame, text=".dld", variable=dld_var).pack(side=tk.LEFT)
 
-# -------------------------------
-# PRZYCISK PRZETWARZANIA
-# -------------------------------
+# Przycisk przetwarzania
 process_button = tk.Button(window, text="Przetwórz", command=process_list, bg="lightgreen")
-process_button.pack(pady=10)
+process_button.pack(pady=5)
 
-# -------------------------------
-# POLE TEKSTOWE Z WYNIKAMI
-# -------------------------------
+# Pole tekstowe do wyświetlania wyników
 result_box = tk.Text(window, height=15, width=70, state=tk.DISABLED)
 result_box.pack(pady=5)
 

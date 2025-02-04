@@ -51,8 +51,7 @@ def find_dld_files(rysunek, pozycja):
             if file.endswith(".dld") and rysunek in file:
                 full_path = os.path.join(root, file)
                 file_date = datetime.fromtimestamp(os.path.getmtime(full_path))
-                file_name_without_ext = os.path.splitext(file)[0]  # Usunięcie rozszerzenia .dld
-                matching_files.append((full_path, file_name_without_ext, file_date))
+                matching_files.append((full_path, file, file_date))
     
     # Sortowanie od najnowszych
     matching_files.sort(key=lambda x: x[2], reverse=True)
@@ -79,7 +78,7 @@ for index, row in df_giete.iterrows():
 
         # Wpisanie wyników do tabeli
         if propozycje:
-            df.at[index, "plik_dld"] = propozycje[0][0]  # Najnowszy plik (bez rozszerzenia .dld)
+            df.at[index, "plik_dld"] = propozycje[0][0]  # Najnowszy plik
             if len(propozycje) > 1:
                 df.at[index, "propozycja1"] = propozycje[1][0]
             if len(propozycje) > 2:
