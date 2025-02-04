@@ -1,0 +1,13 @@
+
+Popraw modul1
+
+w pliku wyniku w kolumnie 
+plik_dld czasami mamy wartosc pustą mimo, że w inne_propozycja
+są elementy.
+
+Dodaj warunek, gdy aby wypełnić pustą komórkę:
+plik_dld
+
+gdy 
+inne_propozycja ma wartość
+wybierz, pierwszy element z inne_propozycja
