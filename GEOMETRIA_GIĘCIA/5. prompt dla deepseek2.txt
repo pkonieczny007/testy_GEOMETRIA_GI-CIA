@@ -1,0 +1,140 @@
+Popraw skrypt aby wyliczenia wynikow out i  in były następujące:
+
+dla długości x(out) czyli po zewnętrznej
+długość x(out) =  x(zewn.) + out
+out = offset * (tangens(180 - kąt))/2
+
+czyli np.
+a(out) =  a(zewn.) + offset * tangens((180 - kąt))/2)
+
+analogicznie dla b(out), c(out) jeżeli występują
+
+
+
+dla długości x(in) czyli po  wewnętrznej:
+
+długość x(in) = x(zewn) + in
+in = długość łuku po neutralnej podzielić na 2
+długość łuku po neutralnej to łuk o promieniu r wewn + 1/2grubość blachy
+
+
+Oto twoje wyniki:
+=== Wyniki dla pliku: prd.4_100k9050.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 4.0 mm
+Promień wewn.       = 5.6326 mm
+-------------------------------------------
+[MainPlane] => a=90.367398
+[SC00] => b=40.367398
+[DC00] => łuk=11.989263
+-------------------------------------------
+Offset (r+g)        = 9.632600 mm
+-------------------------------------------
+a (zewn.) = 90.367398 mm
+b (zewn.) = 40.367398 mm
+Rozwinięcie (a + b + c + ... + łuki) = 142.724059 mm
+
+-------------------------------------------
+a (out) = 98
+b (out) = 48
+
+-----
+
+a (in) = 90.0
+b (in) = 40.0
+
+-----
+kąty
+90
+
+
+=== Wyniki dla pliku: prd.5_2k8_25.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 5.0 mm
+Promień wewn.       = 6.00572 mm
+-------------------------------------------
+[MainPlane] => a=188.994279
+[SC00] => b=200.000000
+[DC00] => łuk=14.845284
+-------------------------------------------
+Offset (r+g)        = 11.005720 mm
+-------------------------------------------
+a (zewn.) = 188.994279 mm
+b (zewn.) = 200.000000 mm
+Rozwinięcie (a + b + c + ... + łuki) = 403.839563 mm
+
+-------------------------------------------
+a (out) = 199
+b (out) = 210
+
+-----
+
+a (in) = 189.0
+b (in) = 200.0
+
+-----
+kąty
+80
+
+Powinny wyglądać tak:
+
+=== Wyniki dla pliku: prd.4_100k9050.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 4.0 mm
+Promień wewn.       = 5.6326 mm
+-------------------------------------------
+[MainPlane] => a=90.367398
+[SC00] => b=40.367398
+[DC00] => łuk=11.989263
+-------------------------------------------
+Offset (r+g)        = 9.632600 mm
+-------------------------------------------
+a (zewn.) = 90.367398 mm
+b (zewn.) = 40.367398 mm
+Rozwinięcie (a + b + c + ... + łuki) = 142.724059 mm
+
+-------------------------------------------
+a (out) = 100
+b (out) = 50
+
+-----
+
+a (in) = 96
+b (in) = 46
+
+-----
+kąty
+90
+
+
+=== Wyniki dla pliku: prd.5_2k8_25.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 5.0 mm
+Promień wewn.       = 6.00572 mm
+-------------------------------------------
+[MainPlane] => a=188.994279
+[SC00] => b=200.000000
+[DC00] => łuk=14.845284
+-------------------------------------------
+Offset (r+g)        = 11.005720 mm
+-------------------------------------------
+a (zewn.) = 188.994279 mm
+b (zewn.) = 200.000000 mm
+Rozwinięcie (a + b + c + ... + łuki) = 403.839563 mm
+
+-------------------------------------------
+a (out) = 200
+b (out) = 250
+
+-----
+
+a (in) = 195
+b (in) = 245
+
+-----
+kąty
+80

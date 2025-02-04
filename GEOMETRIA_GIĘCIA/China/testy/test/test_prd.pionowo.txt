@@ -1,0 +1,22 @@
+=== Dane z <WorkpieceMap> dla pliku: prd.pionowo.dld ===
+
+[Info] Inny węzeł w <WorkpieceMap>: MainPlaneName
+[Info] Inny węzeł w <WorkpieceMap>: MainPlaneSideRef
+[Info] Inny węzeł w <WorkpieceMap>: MainPlaneTransformation
+--- StaticComponent: SC00 ---
+  Hull Outline (punktów=8): [(90.367398, 0.0), (90.367398, 111.0), (90.367398, 111.0), (0.0, 111.0), (0.0, 111.0), (0.0, 0.0), (0.0, 0.0), (90.367398, 0.0)]
+  DeformableCompShortening => DC: DC00
+    ShorteningContour (pkt=8): [(90.367398, 111.0), (90.367398, 0.0), (90.367398, 0.0), (100.0, 0.0), (100.0, 0.0), (100.0, 111.0), (100.0, 111.0), (90.367398, 111.0)]
+--- StaticComponent: SC01 ---
+  Hull Outline (punktów=8): [(9.632602, 111.0), (9.632602, 0.0), (9.632602, 0.0), (50.0, 0.0), (50.0, 0.0), (50.0, 111.0), (50.0, 111.0), (9.632602, 111.0)]
+  DeformableCompShortening => DC: DC00
+    ShorteningContour (pkt=8): [(9.632602, 0.0), (9.632602, 111.0), (9.632602, 111.0), (0.0, 111.0), (0.0, 111.0), (0.0, 0.0), (0.0, 0.0), (9.632602, 0.0)]
+--- VDeformableComponent: DC00 ---
+  Kąt (Angle) = 270 stopni
+  Promień wewn. (PreferredInnerRadius) = 5.6326 mm
+  VDeformableComponentHulls (pkt=8): [(4.0, 0.0), (0.0, 11.989263), (0.0, 11.989263), (0.0, 11.989263), (111.0, 11.989263), (111.0, 0.0), (111.0, 0.0), (111.0, 0.0)]
+  LeftStaticComponent => SC00
+  RightStaticComponent => SC01
+  VBendDeformation -> AngleAfter=270, AngleBefore=180, BendAllowance=0
+
+=== Koniec wyciągania danych z <WorkpieceMap> ===

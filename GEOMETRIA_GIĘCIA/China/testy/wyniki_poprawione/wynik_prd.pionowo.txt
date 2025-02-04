@@ -1,0 +1,8 @@
+=== Wyniki dla pliku: prd.pionowo.dld ===
+Układ flansz (kolejność): SC00, SC01
+MainPlane = SC00 => 'a'
+Grubość = 4.0, r_in = 5.6326, dimension_type=Outside
+
+Legenda: label, x_zewn, x_out, x_in, sum_angle, sum_arc
+a:  zewn=111.0, out=120.6, in=117.0, angle=90.0, arc=11.989263
+b:  zewn=111.0, out=111.0, in=111.0, angle=0.0, arc=0.0

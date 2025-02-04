@@ -1,0 +1,323 @@
+Wynik dla 2 kątów jest ok. 
+Problem z elementami dla 3 i więcej gięc 
+
+DLA PRZYKŁADU BŁEDNIE WYCIĄGNIĘTE a b i c 
+
+
+=== Wyniki dla pliku: prd.8_300_100_50_.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 8.0 mm
+Promień wewn.       = 11.19291 mm
+-------------------------------------------
+[MainPlane] => a=111.000000
+[SC00] => b=64.702325
+[SC01] => c=33.895236
+[DC00] => łuk=23.864968
+[DC01] => łuk=21.213305
+-------------------------------------------
+Offset (r+g)        = 19.192910 mm
+-------------------------------------------
+a (zewn.) = 111.000000 mm
+b (zewn.) = 64.702325 mm 
+c (zewn.) = 33.895236 mm
+Rozwinięcie (a + b + c + ... + łuki) = 254.675834 mm
+
+a (out) = 130 (POWIINO BYC 300)
+b (out) = 84 (POWIINO BYC 100)
+c (out) = 53 (POWIINO BYC 50)
+
+-----
+
+a (in) = 123 
+b (in) = 77
+c (in) = 46
+POWINNO BYĆ 292,85,43.3
+-----
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:delem="http://www.delem.com/delem" version="1.0">
+<delem:data>
+<Workpiece>
+<Version unit="Text" value="1.1"/>
+<WorkpieceName unit="Text" value="8_300_100_50_"/>
+<WorkpieceDescription unit="Text" value=""/>
+<Note unit="Text" value=""/>
+<WorkpieceThickness unit="MilliMeter" value="8"/>
+<WorkpieceThicknessCorrection unit="MilliMeter" value="0"/>
+<WriteProtected unit="Boolean" value="false"/>
+<WorkpieceDimensions unit="Enumeration" value="Outside"/>
+<DrawingType unit="Enumeration" value="2D"/>
+<DrawingSubType unit="Enumeration" value=""/>
+<CreationDate unit="DateTime" value="2025-01-31 09:39:46"/>
+<ModificationDate unit="DateTime" value="2025-01-31 09:52:25"/>
+<RadiusProgrammingStyle unit="Enumeration" value="UseCalculated"/>
+<BendAllowanceProgrammingStyle unit="Enumeration" value="UseCalculated"/>
+<VersionCreated unit="Text" value=""/>
+<VersionLastEdit unit="Text" value="3.8.11"/>
+<FoilStatus unit="Enumeration" value="None"/>
+<BendLabelsVisible unit="Boolean" value="false"/>
+<WorkpieceMaterial>
+<MaterialName unit="Text" value="STAL CZARNA"/>
+<MaterialNumber unit="Text" value="1"/>
+<TensileStrength unit="KiloNewtonPerSquareMm" value="470"/>
+<EModulus unit="KiloNewtonPerSquareMm" value="210000"/>
+<StrainHardeningExponent unit="RealNumber" value="0.23"/>
+</WorkpieceMaterial>
+<WorkpieceMap>
+<MainPlaneName unit="Text" value="MainPlane"/>
+<MainPlaneSideRef unit="DirectionVector" value="1 0 0"/>
+<MainPlaneTransformation unit="Position" value="0 0 0 0 0 1 0"/>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="MainPlane"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 0 -180.807089 111 -180.807089 false 111 -180.807089 111 100 false 111 100 0 100 false 0 100 0 -180.807089 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 111 -180.807089 0 -180.807089 false 0 -180.807089 0 -200 false 0 -200 111 -200 false 111 -200 111 -180.807089 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC00"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 83.895236 0 83.895236 111 false 83.895236 111 19.192911 111 false 19.192911 111 19.192911 0 false 19.192911 0 83.895236 0 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 19.192911 0 19.192911 111 false 19.192911 111 0 111 false 0 111 0 0 false 0 0 19.192911 0 false"/>
+</DeformableCompShortening>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC01"/>
+<ShorteningContour unit="Outline" value="4 83.895236 111 83.895236 0 false 83.895236 0 100 0 false 100 0 100 111 false 100 111 83.895236 111 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC01"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 16.104764 111 16.104764 0 false 16.104764 0 50 0 false 50 0 50 111 false 50 111 16.104764 111 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC01"/>
+<ShorteningContour unit="Outline" value="4 16.104764 0 16.104764 111 false 16.104764 111 0 111 false 0 111 0 0 false 0 0 16.104764 0 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<VDeformableComponent>
+<WorkpieceComponentName unit="Text" value="DC00"/>
+<VDeformableComponentBendLine unit="Lines" value="1 Line 11.932484 0 11.932484 111 false"/>
+<VDeformableComponentAngle unit="Degrees" value="90"/>
+<PreferredInnerRadius unit="MilliMeter" value="11.19291"/>
+<ActualInnerRadius unit="MilliMeter" value="11.19291"/>
+<VDeformableComponentHulls unit="Outlines" value="1 Outline 4 0 0 23.864968 0 false 23.864968 0 23.864968 111 false 23.864968 111 0 111 false 0 111 0 0 false"/>
+<BendZoneCreationOrigin unit="Enumeration" value="delem_editor"/>
+<LeftStaticComponent>
+<StaticComponentName unit="Text" value="MainPlane"/>
+<SideReference unit="Line" value="0 -180.807089 111 -180.807089 false"/>
+</LeftStaticComponent>
+<RightStaticComponent>
+<StaticComponentName unit="Text" value="SC00"/>
+<SideReference unit="Line" value="19.192911 111 19.192911 0 false"/>
+</RightStaticComponent>
+<VBendDeformation>
+<DeformationName unit="Text" value="Def00DC00"/>
+<AngleAfter unit="Degrees" value="90"/>
+<AngleBefore unit="Degrees" value="180"/>
+<BendAllowance unit="MilliMeter" value="0"/>
+</VBendDeformation>
+</VDeformableComponent>
+<VDeformableComponent>
+<WorkpieceComponentName unit="Text" value="DC01"/>
+<VDeformableComponentBendLine unit="Lines" value="1 Line 10.606653 0 10.606653 111 false"/>
+<VDeformableComponentAngle unit="Degrees" value="260"/>
+<PreferredInnerRadius unit="MilliMeter" value="11.19291"/>
+<ActualInnerRadius unit="MilliMeter" value="11.19291"/>
+<VDeformableComponentHulls unit="Outlines" value="1 Outline 4 0 0 21.213305 0 false 21.213305 0 21.213305 111 false 21.213305 111 0 111 false 0 111 0 0 false"/>
+<BendZoneCreationOrigin unit="Enumeration" value="delem_editor"/>
+<LeftStaticComponent>
+<StaticComponentName unit="Text" value="SC00"/>
+<SideReference unit="Line" value="83.895236 0 83.895236 111 false"/>
+</LeftStaticComponent>
+<RightStaticComponent>
+<StaticComponentName unit="Text" value="SC01"/>
+<SideReference unit="Line" value="16.104764 111 16.104764 0 false"/>
+</RightStaticComponent>
+<VBendDeformation>
+<DeformationName unit="Text" value="Def00DC01"/>
+<AngleAfter unit="Degrees" value="260"/>
+<AngleBefore unit="Degrees" value="180"/>
+<BendAllowance unit="MilliMeter" value="0"/>
+</VBendDeformation>
+</VDeformableComponent>
+</WorkpieceMap>
+<WorkPieceMarker>
+<StaticComponentName unit="Text" value=""/>
+<WorkPieceMarkerPosition unit="Position" value="0 0 0 0 0 1 0"/>
+<WorkPieceMarkerFlipped unit="Boolean" value="false"/>
+</WorkPieceMarker>
+<signature>2ff6aa7bc0d64c3a5c98b2f38476a41ebc4486be86850a3372ec6187dc851a3c</signature>
+</Workpiece>
+</delem:data>
+</xsl:stylesheet>
+i drugi 
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:delem="http://www.delem.com/delem" version="1.0">
+<delem:data>
+<Workpiece>
+<Version unit="Text" value="1.1"/>
+<WorkpieceName unit="Text" value="100x50x50-4"/>
+<WorkpieceDescription unit="Text" value=""/>
+<Note unit="Text" value=""/>
+<WorkpieceThickness unit="MilliMeter" value="4"/>
+<WorkpieceThicknessCorrection unit="MilliMeter" value="0"/>
+<WriteProtected unit="Boolean" value="false"/>
+<WorkpieceDimensions unit="Enumeration" value="Outside"/>
+<DrawingType unit="Enumeration" value="2D"/>
+<DrawingSubType unit="Enumeration" value=""/>
+<CreationDate unit="DateTime" value="2025-01-31 10:15:43"/>
+<ModificationDate unit="DateTime" value="2025-01-31 10:16:02"/>
+<RadiusProgrammingStyle unit="Enumeration" value="UseCalculated"/>
+<BendAllowanceProgrammingStyle unit="Enumeration" value="UseCalculated"/>
+<VersionCreated unit="Text" value=""/>
+<VersionLastEdit unit="Text" value="3.8.11"/>
+<FoilStatus unit="Enumeration" value="None"/>
+<BendLabelsVisible unit="Boolean" value="false"/>
+<WorkpieceMaterial>
+<MaterialName unit="Text" value="STAL CZARNA"/>
+<MaterialNumber unit="Text" value="1"/>
+<TensileStrength unit="KiloNewtonPerSquareMm" value="470"/>
+<EModulus unit="KiloNewtonPerSquareMm" value="210000"/>
+<StrainHardeningExponent unit="RealNumber" value="0.23"/>
+</WorkpieceMaterial>
+<WorkpieceMap>
+<MainPlaneName unit="Text" value="MainPlane"/>
+<MainPlaneSideRef unit="DirectionVector" value="1 0 0"/>
+<MainPlaneTransformation unit="Position" value="0 0 0 0 0 1 0"/>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="MainPlane"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 0 309.632602 200 309.632602 false 200 309.632602 200 400 false 200 400 0 400 false 0 400 0 309.632602 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 200 309.632602 0 309.632602 false 0 309.632602 0 300 false 0 300 200 300 false 200 300 200 309.632602 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC00"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 40.367398 0 40.367398 200 false 40.367398 200 9.632602 200 false 9.632602 200 9.632602 0 false 9.632602 0 40.367398 0 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 9.632602 0 9.632602 200 false 9.632602 200 0 200 false 0 200 0 0 false 0 0 9.632602 0 false"/>
+</DeformableCompShortening>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC01"/>
+<ShorteningContour unit="Outline" value="4 40.367398 200 40.367398 0 false 40.367398 0 50 0 false 50 0 50 200 false 50 200 40.367398 200 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC01"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 9.632602 200 9.632602 0 false 9.632602 0 50 0 false 50 0 50 200 false 50 200 9.632602 200 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC01"/>
+<ShorteningContour unit="Outline" value="4 9.632602 0 9.632602 200 false 9.632602 200 0 200 false 0 200 0 0 false 0 0 9.632602 0 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<VDeformableComponent>
+<WorkpieceComponentName unit="Text" value="DC00"/>
+<VDeformableComponentBendLine unit="Lines" value="1 Line 5.994631 0 5.994631 200 false"/>
+<VDeformableComponentAngle unit="Degrees" value="90"/>
+<PreferredInnerRadius unit="MilliMeter" value="5.6326"/>
+<ActualInnerRadius unit="MilliMeter" value="5.6326"/>
+<VDeformableComponentHulls unit="Outlines" value="1 Outline 4 0 0 11.989263 0 false 11.989263 0 11.989263 200 false 11.989263 200 0 200 false 0 200 0 0 false"/>
+<BendZoneCreationOrigin unit="Enumeration" value="delem_editor"/>
+<LeftStaticComponent>
+<StaticComponentName unit="Text" value="MainPlane"/>
+<SideReference unit="Line" value="0 309.632602 200 309.632602 false"/>
+</LeftStaticComponent>
+<RightStaticComponent>
+<StaticComponentName unit="Text" value="SC00"/>
+<SideReference unit="Line" value="9.632602 200 9.632602 0 false"/>
+</RightStaticComponent>
+<VBendDeformation>
+<DeformationName unit="Text" value="Def00DC00"/>
+<AngleAfter unit="Degrees" value="90"/>
+<AngleBefore unit="Degrees" value="180"/>
+<BendAllowance unit="MilliMeter" value="0"/>
+</VBendDeformation>
+</VDeformableComponent>
+<VDeformableComponent>
+<WorkpieceComponentName unit="Text" value="DC01"/>
+<VDeformableComponentBendLine unit="Lines" value="1 Line 5.994631 0 5.994631 200 false"/>
+<VDeformableComponentAngle unit="Degrees" value="270"/>
+<PreferredInnerRadius unit="MilliMeter" value="5.6326"/>
+<ActualInnerRadius unit="MilliMeter" value="5.6326"/>
+<VDeformableComponentHulls unit="Outlines" value="1 Outline 4 0 0 11.989263 0 false 11.989263 0 11.989263 200 false 11.989263 200 0 200 false 0 200 0 0 false"/>
+<BendZoneCreationOrigin unit="Enumeration" value="delem_editor"/>
+<LeftStaticComponent>
+<StaticComponentName unit="Text" value="SC00"/>
+<SideReference unit="Line" value="40.367398 0 40.367398 200 false"/>
+</LeftStaticComponent>
+<RightStaticComponent>
+<StaticComponentName unit="Text" value="SC01"/>
+<SideReference unit="Line" value="9.632602 200 9.632602 0 false"/>
+</RightStaticComponent>
+<VBendDeformation>
+<DeformationName unit="Text" value="Def00DC01"/>
+<AngleAfter unit="Degrees" value="270"/>
+<AngleBefore unit="Degrees" value="180"/>
+<BendAllowance unit="MilliMeter" value="0"/>
+</VBendDeformation>
+</VDeformableComponent>
+</WorkpieceMap>
+<WorkPieceMarker>
+<StaticComponentName unit="Text" value=""/>
+<WorkPieceMarkerPosition unit="Position" value="0 0 0 0 0 1 0"/>
+<WorkPieceMarkerFlipped unit="Boolean" value="false"/>
+</WorkPieceMarker>
+<signature>194c8b4ed1893c36509f6c72d62c5d71e268f633158948d037f05a81a0fc8a68</signature>
+</Workpiece>
+</delem:data>
+</xsl:stylesheet>
+
+kąty
+90
+-100
+
+
+=== Wyniki dla pliku: prd.100x50x50-4.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 4.0 mm
+Promień wewn.       = 5.6326 mm
+-------------------------------------------
+[MainPlane] => a=90.367398
+[SC00] => b=30.734796
+[SC01] => c=40.367398
+[DC00] => łuk=11.989263
+[DC01] => łuk=11.989263
+-------------------------------------------
+Offset (r+g)        = 9.632600 mm
+-------------------------------------------
+a (zewn.) = 90.367398 mm
+b (zewn.) = 30.734796 mm
+c (zewn.) = 40.367398 mm
+Rozwinięcie (a + b + c + ... + łuki) = 185.448118 mm
+
+a (out) = 100
+b (out) = 40 (powinno być 50)
+c (out) = 50
+
+-----
+
+a (in) = 96 ok
+b (in) = 37 (powinno być 42
+c (in) = 46 ok
+
+-----
+
+kąty
+90
+-90

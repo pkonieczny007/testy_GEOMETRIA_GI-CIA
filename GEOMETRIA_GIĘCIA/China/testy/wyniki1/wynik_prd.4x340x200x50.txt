@@ -1,0 +1,34 @@
+=== Wyniki dla pliku: prd.4x340x200x50.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 4.0 mm
+Promień wewn.       = 6.75594 mm
+-------------------------------------------
+[MainPlane] => a=200.000000
+[SC00] => b=182.171486
+[SC01] => c=40.974695
+[DC00] => łuk=11.873840
+[DC01] => łuk=12.225599
+-------------------------------------------
+Offset (r+g)        = 10.755940 mm
+-------------------------------------------
+a (zewn.) = 200.000000 mm
+b (zewn.) = 182.171486 mm
+c (zewn.) = 40.974695 mm
+Rozwinięcie (a + b + c + ... + łuki) = 447.245620 mm
+
+a (out) = 213
+b (out) = 195
+c (out) = 54
+
+-----
+
+a (in) = 206
+b (in) = 188
+c (in) = 47
+
+-----
+
+kąty
+-80
+-100

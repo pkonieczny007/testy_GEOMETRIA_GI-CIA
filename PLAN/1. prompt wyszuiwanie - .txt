@@ -1,0 +1,27 @@
+Napisz plan działania i możliwości wykonania zadania.
+
+
+Tworzymy aplikacje/system do wyszukiwania geometrii (pliki formatu dld)
+
+
+Na podstawie wykazu elementów (elementy oznaczone jako gięte np. G, GS lub GSO lub inne z G)
+Wyszukiwanie plików dld w katalogach na sieci (stworzonych przez operatorów)
+Dopisanie do wykazów propozycji  plików i zostawienie, które pliki są nie wykonane. 
+
+Po sprawdzeniu które elementy są zrobione, wybranie które pliki należy zrobić.
+
+Wykonywanie brakujących
+Zebranie plików z propozycji
+
+Tworzenie paczki potrzebnych plików
+wysłanie paczki na serwer lub gdy brak połączenia na pendrive aby była możliwość wgrania do maszyny
+
+
+- wykaz jest w pliku xlsx
+- pliki dld to specjalny format który odczytuje maszyna, są to zwykłe nie modyfikowalne pliki xml
+- mamy jeden klucz do programowania nowych plikow dld
+- więcej niż jedna osoba będzie sprawdzać gięcia i dostępność już gotowych plików gięć (dld)
+- mam szkic skryptu do odczytu gięć (gięcie, kąt, gięcie), który może być wykorzystany 
+
+
+Napisz plan, i propozycje jak szybko i dobrze zorganizować pracce do stworzenia systemu. jakie narzędzia chata gpt możemy uzyc i napisz propozycje promptow, abyśmy mogli bardziej szczegolowo wykonać projekt

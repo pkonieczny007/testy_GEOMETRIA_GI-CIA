@@ -1,0 +1,35 @@
+prd.100dl.dld
+StaticComponentHull
+4 0 104.816478 200 104.816478 false 200 104.816478 200 200 false 200 200 0 200 false 0 200 0 104.816478 false
+ShorteningContour
+4 200 104.816478 0 104.816478 false 0 104.816478 0 100 false 0 100 200 100 false 200 100 200 104.816478 false
+
+prd.200dl.dld
+StaticComponentHull
+4 0 4.816478 200 4.816478 false 200 4.816478 200 200 false 200 200 0 200 false 0 200 0 4.816478 false
+ShorteningContour
+4 200 4.816478 0 4.816478 false 0 4.816478 0 0 false 0 0 200 0 false 200 0 200 4.816478 false
+
+prd.300,50dl.dld
+StaticComponentHull
+4 0 -95.18352 200 -95.18352 false 200 -95.18352 200 200 false 200 200 0 200 false 0 200 0 -95.18352 false
+ShorteningContour
+Brak danych
+
+prd.300dl.dld
+StaticComponentHull
+4 0 4.816478 200 4.816478 false 200 4.816478 200 200 false 200 200 0 200 false 0 200 0 4.816478 false
+ShorteningContour
+4 200 4.816478 0 4.816478 false 0 4.816478 0 0 false 0 0 200 0 false 200 0 200 4.816478 false
+
+prd.300dl60.dld
+StaticComponentHull
+4 0 -95.18352 200 -95.18352 false 200 -95.18352 200 200 false 200 200 0 200 false 0 200 0 -95.18352 false
+ShorteningContour
+4 200 -95.18352 0 -95.18352 false 0 -95.18352 0 -99.999998 false 0 -99.999998 200 -99.999998 false 200 -99.999998 200 -95.18352 false
+
+prd.30dl.dld
+StaticComponentHull
+4 200 200 0 200 false 0 200 0 -99.999998 false 0 -99.999998 200 -99.999998 false 200 -99.999998 200 200 false
+ShorteningContour
+Brak danych

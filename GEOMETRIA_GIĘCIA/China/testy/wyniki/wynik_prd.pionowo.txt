@@ -1,0 +1,24 @@
+=== Wyniki dla pliku: prd.pionowo.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 4.0 mm
+Promień wewn.       = 5.6326 mm
+-------------------------------------------
+[SC00] => a=111.000000
+[SC01] => b=40.367398
+[DC00] => łuk=11.989263
+-------------------------------------------
+Offset (r+g)        = 9.632600 mm
+-------------------------------------------
+a (zewn.) = 111.000000 mm
+b (zewn.) = 40.367398 mm
+Rozwinięcie (a + b + łuki) = 163.356661 mm
+
+a (out) = 120.6 50.0
+
+-----
+a (in) = 117.0 46.4
+
+-----
+kąty
+-90

@@ -1,0 +1,34 @@
+=== Wyniki dla pliku: prd.3g_4_100_50_50.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 4.0 mm
+Promień wewn.       = 4.19286 mm
+-------------------------------------------
+[MainPlane] => a=90.367398
+[SC00] => b=32.174543
+[SC01] => c=41.807145
+[DC00] => łuk=11.989263
+[DC01] => łuk=11.889429
+-------------------------------------------
+Offset (r+g)        = 8.192860 mm
+-------------------------------------------
+a (zewn.) = 90.367398 mm
+b (zewn.) = 32.174543 mm
+c (zewn.) = 41.807145 mm
+Rozwinięcie (a + b + c + ... + łuki) = 188.227778 mm
+
+a (out) = 99
+b (out) = 40
+c (out) = 50
+
+-----
+
+a (in) = 96
+b (in) = 38
+c (in) = 48
+
+-----
+
+kąty
+90
+70

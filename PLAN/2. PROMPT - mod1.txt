@@ -1,0 +1,48 @@
+Napisz skrypt w Pythonie wykorzystujący Pandas do wczytania pliku Excel "wykaz.xlsx". 
+domyślnie wybiera plik w katalogu w którym znajduje się skrypt.
+
+Znajdź w kolumnie "TECHNOLOGIA" wszystkie wpisy zawierające zaczynające się lub zawierające G np. G, GS, GSO. 
+
+Pobierz dane z kolumny NAZWA.
+
+nazwa zawiera dane rozdzielone znakiem _ 
+np. 
+12_S235_SL40034102_p10_1st_S_5310_1
+
+gdzie:
+
+grubosc_gatunek_rysunek_pozycja_sztuki_Technologia_zlecenie_index
+
+
+Wyszukiwanie pliku dld gięcia po rysunku.
+Pobierz rysunek z nazwy. Szukaj plików dld z katalogu 
+katalog_giecie = wpiszę scieżke
+
+przeszukuj wszystkie foldery które są w katalogu.
+wg wytycznych:
+- z NAZWA pobiera nr rysunku czyli 3grupa tekstu rozdzielona "_"
+dla 12_S235_SL40034102_p10_1st_S_5310_1 to:
+SL40034102
+i nr pozycji: czyli 4 grupa tekstu rozdzielona "_"
+
+- wyszukuj w pierwszej kolejności po nr rysunku, sprawdzaj czy nr rysunku występuje w nazwie pliku.dld
+gdy nazwa rysunku zaczyna się na SL pomiń SL. np dla SL40034102 szukaj 40034102.
+Utwórz grupę wszystkich detali i zapisz w liście pandas, od najnowszych. 
+Następnie sprawdz czy występuje nr pozycji w nazwie, w pierwszej kolejnosci wybierz gdy prawidlowa pozycja, następnie bierz pod uwagę bez pozycji.
+
+
+
+
+w pliku wynik, utwórz kolumny:
+
+plik_dld, dane_plik_dld, propozycja1, dane_propozycja1, propozycja2, dane_propozycja2, propozycja3, dane_propozycja3, inne_propozycja, dane_inne_propozycja
+
+ - w plik_dld wpisz najnowszy wynik
+ - w dane_plik_dld na razie puste - w przyszłości pobierzemy dane o kątach i długościach
+ w propozycja1 (2, 3) kolejne propozycje i dane
+ w inne_propozycja wpisz wszystkie inne jakie znalazlo
+
+zapisz plik wynik ktory wyglada jak wykaz.xlsx tylko ma dopisane dodatkowe kolumny
+
+
+

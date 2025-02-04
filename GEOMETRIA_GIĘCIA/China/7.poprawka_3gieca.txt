@@ -1,0 +1,106 @@
+
+
+Układ kolejności (topologii) gięć
+
+Jak są ustawione poszczególne flansze względem siebie? po kolei jak wystepuja w kodzie main, sc00 dc00 sc01 dc01 itd. czasami main od razu jest sc
+Który StaticComponent jest pierwszą płaszczyzną („MainPlane” / a)? main 
+W jakiej kolejności (lub hierarchii) występują kolejne flansze (b, c, d, …)? po kolei jak sc i dc
+Które gięcie łączy daną flanszę z poprzednią (np. DC00 łączy MainPlane i SC00, DC01 łączy SC00 z SC01 itd.)? jak wyzej
+Grubość materiału, promień wewnętrzny, kąty gięć - z pliku
+
+Informacje do obliczeń outside/inside (np. 
+Δ
+𝑜
+𝑢
+𝑡
+Δ 
+out
+​
+ , 
+Δ
+𝑖
+𝑛
+Δ 
+in
+​
+ , długość łuku neutralnego).
+Który kąt należy do którego zgięcia DCxx, bo w pliku może być kilka gięć.
+Jawne wskazanie, która krawędź hulla jest „zagięciem” (ShorteningContour), a która jest wolną krawędzią
+
+Każdy StaticComponentHull to na ogół prostokąt (4 wierzchołki), ale przy 2 lub więcej gięciach w jednym SC może to być kształt z dwiema krawędziami zagięcia.
+Trzeba umieć odnaleźć (w oparciu o DeformableCompShortening) dokładnie tę krawędź, która stanowi zagięcie (współdzieloną z DC00 / DC01 / …), a potem krawędź przeciwną uznać za długość „wolną” (faktyczny wymiar flanszy).
+Tego nie da się zrobić wyłącznie przez bounding box – potrzebna jest analiza wierzchołków poligonu i porównanie ich z wierzchołkami „shorteningContour”.
+Jasne reguły, co chcemy zrobić z ewentualnymi nietypowymi kształtami
+
+Czy wszystkie flansze są dokładnie prostokątne i mają 4 wierzchołki?
+Czy może zdarzyć się 6, 8 wierzchołków (wycięcia, zaokrąglenia)? Wówczas identyfikacja krawędzi zagięcia / wolnej krawędzi wymaga bardziej ogólnego algorytmu.
+Sposób przypisania liter (a, b, c, d, ...)
+
+Czy zawsze MainPlane jest „a”, a kolejne flansze wzdłuż łańcucha gięć to b, c, d…? nie zawez 
+Co jeśli jest „rozgałęzienie” i np. SC00 i SC01 są równolegle do siebie?
+Dokładne formuły i zaokrąglenia
+
+Jak zaokrąglać (do setnych, do całych, do jednego miejsca po przecinku)? zaokraglenie do 1 miejca po przecinku
+Czy w przypadku „podejrzanych” kątów (np. 270°, 260°) mamy jakiś dodatkowy mnożnik, czy liczymy 
+Δ
+𝑜
+𝑢
+𝑡
+Δ 
+out
+​
+  tak samo?
+
+
+
+Napisz poprawiony kod. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--
+
+
+jakie informacje potrzebujesz aby otrzymać prawidłowy kod?
+
+wszystkie odcinki rozpatruj jako płaszczyzna 2d. występują po kolei jak są numerowane. 
+Płaszczyzna 3d to wymiar, który zapisywany jest przy tworzeniu modelu ale nie ma w tej plaszczyznie już giec.
+
+w przypadku poniżej długość złamu to 111.
+
+
+WorkpieceComponentName unit="Text" value="MainPlane"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 0 -180.807089 111 -180.807089 false 111 -180.807089 111 100 false 111 100 0 100 false 0 100 0 -180.807089 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 111 -180.807089 0 -180.807089 false 0 -180.807089 0 -200 false 0 -200 111 -200 false 111 -200 111 -180.807089 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC00"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 83.895236 0 83.895236 111 false 83.895236 111 19.192911 111 false 19.192911 111 19.192911 0 false 19.192911 0 83.895236 0 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 19.192911 0 19.192911 111 false 19.192911 111 0 111 false 0 111 0 0 false 0 0 19.192911 0 false"/>
+</DeformableCompShortening>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC01"/>
+<ShorteningContour unit="Outline" value="4 83.895236 111 83.895236 0 false 83.895236 0 100 0 false 100 0 100 111 false 100 111 83.895236 111 false"/>
+</DeformableCompShortening>
+</StaticComponent>

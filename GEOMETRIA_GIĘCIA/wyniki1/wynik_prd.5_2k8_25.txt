@@ -1,0 +1,28 @@
+=== Wyniki dla pliku: prd.5_2k8_25.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 5.0 mm
+Promień wewn.       = 6.00572 mm
+-------------------------------------------
+[MainPlane] => a=188.994279
+[SC00] => b=200.000000
+[DC00] => łuk=14.845284
+-------------------------------------------
+Offset (r+g)        = 11.005720 mm
+-------------------------------------------
+a (zewn.) = 188.994279 mm
+b (zewn.) = 200.000000 mm
+Rozwinięcie (a + b + c + ... + łuki) = 403.839563 mm
+
+a (out) = 200
+b (out) = 250
+
+-----
+
+a (in) = 195
+b (in) = 245
+
+-----
+
+kąty
+80

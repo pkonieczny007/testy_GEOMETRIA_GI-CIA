@@ -1,0 +1,45 @@
+dołózmy jeszcze funckjonalnoci.
+Dodaj wymiary outside i inside, aby się wyswietlaly. czyli nasz wynik powinien wygladac tak 
+
+
+=== Wyniki dla pliku: prd.3b.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 2.0 mm
+Promień wewn.       = 7.54354 mm
+-------------------------------------------
+[MainPlane] => a=195.226400
+[SC00] => b=95.452797
+[SC01] => c=11.273335
+[SC02] => d=10.046938
+[DC00] => łuk=5.927563
+[DC01] => łuk=5.927562
+[DC02] => łuk=6.710077
+-------------------------------------------
+Offset (r+g)        = 11.632960 mm
+-------------------------------------------
+a (zewn.) = 195.226400 mm
+b (zewn.) = 95.452797 mm
+c (zewn.) = 11.273335 mm
+d (zewn.) = 10.046938 mm
+Rozwinięcie (a + b + c + ... + łuki) = 330.564672 mm
+
+-------------------------------------------
+a (out) = 200 mm
+b (out) = 105 mm
+c (out) = 20 mm
+d (out) = 14 mm
+
+-----
+
+a (in) = 198 mm
+b (in) = 101 mm
+c (in) = 17.2 mm
+d (in) = 13.2 mm
+
+----
+kąty
+90
+-135
+
+to proponowany wynik dla pliku  
