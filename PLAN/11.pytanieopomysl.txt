@@ -1,0 +1,31 @@
+
+3. 
+
+
+
+------------------------------------------------------------------
+
+
+
+2. nie mam opcji w mojej licencji wgrywania dxf i cad. musimy zarządzać paczkami. jak mozemy to sprawnie zrobic?
+Proponuje skrypt w python, z opcjami zapisz, przenies, podgladu, wybierania elementow do przerobki i edycji. 
+
+Zaproponuj system zarządzania takimi plikami, aby łatwo mozna bylo wybierac je. dobra opcja bylaby integracja z wykazem elementow z xlsx, ale to tylko pomysl. jak masz lepszy dawaj.
+
+------------------------------------------------------------------
+
+
+
+1.Potrzebuje pomysłów na rozwiązanie problemu. 
+
+Potrzebuje szybkiego sposobu na tworzenie programów na gięcie dla maszyny krawędziarki.
+
+Problem.
+Licencja obsługuje maksymalnie 10 plików dld, które moge otworzyc na moim komputerze. 
+Ogólnie pliki mozna otworzyc z lokalizacji: C:\ProgramData\Delem\Profile-T\Machines\DELEM\User\Products
+
+W zleceniu mamy dużo elementow do opracowania. 
+Np 100. czesc mogę wykorzystać ze starych. dlatego mam zrobiony skrypt ktory sprawdza, juz zrobione skypty i przenosi je w jedno miejsce.
+Ale czesc bedzie trzeba "narysować", ograniczenia jakie ma program to nie ma mozliwosci edycji plikow bez otwierania oprogramowania (ktore ma klucz i limit 10 elementow)
+
+Czy masz jakis pomysl na sprawne rysowanie plikow i podglad

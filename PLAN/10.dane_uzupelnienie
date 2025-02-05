@@ -23,6 +23,11 @@ Dane uzupełnia analizując plik dld.
 Poniżeż skrypty 1 dotyczy wykazu. wykaz wynik.xlsx tworzony jest przez pierwszy skrypt. 
 2 skrypt to logika odczytu pliku dld (mozesz poprawic jezeli widzisz blad)
 
+Plik wejściowy: wynik.xlsx
+sprawdza folder plik_dld z plikami dld
+wyniki tmp tworzy w folderze plik_dld tam tworzy pliki txt dla kazdego elementu
+wynik zapisuje w pliku wynik_dane.xlsx gdzie dołożone są i wypełnione są nowe kolumny
+
 Skrypt MODUŁ1.ODCZYT_WYKAZUv1.2
 import os
 import pandas as pd

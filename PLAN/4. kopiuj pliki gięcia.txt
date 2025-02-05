@@ -1,0 +1,20 @@
+utworz skrypt ktory na podstawie pliku wynik.xlsx
+
+menu do wyboru:
+0. Aktualizuj pliki
+1. Pobierz pliki z plik_dld
+2. Pobierz pliki z propozycja1
+3. Pobierz pliki z propozycja2
+4. Pobierz pliki z propozycja3
+5. Pobierz pliki z inne_propozycja
+tworzy katalogi
+
+ plik_dld
+ propozycje_dld
+ dld 
+i pobiera pliki w zaleznosci ktore się wybrało
+
+na początku po uruchomieniu pobiera z katalogu katalog_giecie = r"C:\PYTHON\PROJEKT_GEOMETRIA_GIĘCIA\baza"
+pobiera wszystkie pliki z wynik.xlsx do dld
+po uruchomieniu 0 aktualizuje jeszcze raz pobierajac pliki
+po uruchomieniu 1 pobiera z katalogu dld do katalogu propozycje wybrane pozycje
