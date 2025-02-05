@@ -1,7 +1,14 @@
 
+4
+status nie zmienia sie, powinien zmieniac sie w programie w zaleznosci gdzie jest plik
+
+
+
+
 3. 
-
-
+Jak mogę zrobić interfejs graficzny.
+Abym mogl wybierac przyciskiem check. ktore elementy chce robic. wtedy one trafiaja do folderu do edycji. po odhaczeniu, trafiaja do folderu Gotowe lub W_trakcie
+Interfejs graficzny bedzie wygladac jak excel. jakies pomysly?
 
 ------------------------------------------------------------------
 

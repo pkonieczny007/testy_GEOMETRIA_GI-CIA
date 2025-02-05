@@ -12,4 +12,4 @@ git add . ; git commit -m "Zaktualizowano pliki" ; git push origin main
 git add .gitignore ; git commit -m "Dodano ignorowanie plików tymczasowych Excel" ; git push origin main
 
 
-
+git add . ; git commit -m "ZAPIS, ZALEGLYCH" ; git push origin main
