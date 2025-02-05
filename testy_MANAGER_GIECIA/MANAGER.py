@@ -12,7 +12,8 @@ BASE_PATH = r"C:\PYTHON\PROJEKT_GEOMETRIA_GIĘCIA\testy_MANAGER_GIECIA"
 PATH_EXCEL = os.path.join(BASE_PATH, "ListaElementow.xlsx")
 
 PATH_NOWE = os.path.join(BASE_PATH, "Nowe")
-PATH_W_TRAKCIE = os.path.join(BASE_PATH, "W_trakcie")
+#PATH_W_TRAKCIE = os.path.join(BASE_PATH, "W_trakcie")
+PATH_W_TRAKCIE = r"C:\ProgramData\Delem\Profile-T\Machines\DELEM\User\Products"
 PATH_GOTOWE = os.path.join(BASE_PATH, "Gotowe")
 PATH_ARCHIWUM = os.path.join(BASE_PATH, "Archiwum")
 
