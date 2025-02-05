@@ -4,6 +4,9 @@ import pandas as pd
 import os
 import shutil
 
+# Potrzebne do dopasowywania kolumn (autofit):
+from openpyxl.utils import get_column_letter
+
 # ------------ KONFIGURACJA ------------
 BASE_PATH = r"C:\PYTHON\PROJEKT_GEOMETRIA_GIĘCIA\testy_MANAGER_GIECIA"
 PATH_EXCEL = os.path.join(BASE_PATH, "ListaElementow.xlsx")
@@ -24,15 +27,15 @@ FOLDERS_STATUS = [
 ]
 
 def przenies_do_folderu(src, dst):
-    """Prosta funkcja przenosząca plik z src do dst."""
+    """Przenosi plik z src do dst."""
     shutil.move(src, dst)
 
 class ManagerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Manager Gięcia - tkinter (przenoszenie ze wszystkich folderów)")
+        self.root.title("Manager Gięcia - tkinter (z autofitem w Excelu)")
 
-        # Górny panel przycisków
+        # --- Panel przycisków (góra) ---
         self.button_frame = tk.Frame(self.root)
         self.button_frame.pack(fill=tk.X, padx=5, pady=5)
 
@@ -43,7 +46,7 @@ class ManagerApp:
         tk.Button(self.button_frame, text="Edytuj nazwę pliku", command=self.edytuj_nazwe_pliku).pack(side=tk.LEFT, padx=5)
         tk.Button(self.button_frame, text="Wyjście", command=self.root.destroy).pack(side=tk.RIGHT, padx=5)
 
-        # Główna ramka + Canvas (przewijana tabela)
+        # --- Ramka główna + Canvas (przewijana tabela) ---
         self.main_frame = tk.Frame(root)
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
@@ -52,6 +55,7 @@ class ManagerApp:
 
         self.scrollbar = tk.Scrollbar(self.main_frame, orient=tk.VERTICAL, command=self.canvas.yview)
         self.scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
 
         # Ramka na tabelę
@@ -66,24 +70,50 @@ class ManagerApp:
 
         self.table_frame.bind("<Configure>", self.on_frame_configure)
 
-        # Start
+        # Na start - odśwież
         self.odswiez()
 
     def on_frame_configure(self, event):
-        """Ustawia region przewijania canvasa po zmianie."""
+        """Aktualizuje region przewijania canvasa."""
         self.canvas.configure(scrollregion=self.canvas.bbox("all"))
 
-    # ------------------------------------------------------------------------------
-    # 1. Skan folderów i synchronizacja z plikiem Excel
-    # ------------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # FUNKCJA ZAPISUJĄCA DF DO EXCELA Z AUTOFITEM
+    # -------------------------------------------------------------------------
+    def save_excel_autofit(self, df: pd.DataFrame, path: str):
+        """
+        Zapisuje DataFrame do pliku Excel z automatycznym dopasowaniem szerokości kolumn.
+        Wykorzystuje engine='openpyxl'.
+        """
+        with pd.ExcelWriter(path, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='Sheet1', index=False)
+            ws = writer.sheets['Sheet1']
 
+            # Autofit columns
+            for col_idx, col in enumerate(ws.columns, start=1):
+                max_length = 0
+                for cell in col:
+                    val = cell.value
+                    if val is not None:
+                        length = len(str(val))
+                        if length > max_length:
+                            max_length = length
+                col_letter = get_column_letter(col_idx)
+                # Dodaj mały margines, np. +2
+                ws.column_dimensions[col_letter].width = max_length + 2
+
+            writer.save()
+
+    # -------------------------------------------------------------------------
+    # 1. Skan folderów i synchronizacja z plikiem Excel
+    # -------------------------------------------------------------------------
     def sync_with_folders(self):
         """
         Pełna synchronizacja folderów z plikiem Excel.
-        1) Wczytuje df z Excela (tworzy jeśli brak).
-        2) Skanuje foldery i wykrywa pliki .dld -> ustawia im Status w df lub dodaje nowe wiersze.
-        3) Jeśli w df jest plik, którego nigdzie nie ma -> Status = 'Nie znaleziono'.
-        4) Zapisuje df do Excel.
+        1) Wczytuje df z Excela (lub tworzy).
+        2) Skanuje foldery i ustawia status w df (dodając nowe wiersze, jeśli plik .dld nie istnieje w Excelu).
+        3) Jeśli w df jest plik, którego nie ma w żadnym folderze -> Status="Nie znaleziono".
+        4) Zapisuje df z autofitem.
         """
         if os.path.exists(PATH_EXCEL):
             self.df = pd.read_excel(PATH_EXCEL)
@@ -96,6 +126,7 @@ class ManagerApp:
                 self.df[col] = ""
 
         found_files = {}
+        # Skan wszystkich folderów
         for folder_path, status_name in FOLDERS_STATUS:
             if not os.path.exists(folder_path):
                 os.makedirs(folder_path, exist_ok=True)
@@ -104,14 +135,14 @@ class ManagerApp:
                     if fname not in found_files:
                         found_files[fname] = (folder_path, status_name)
 
-        # Zaktualizuj / dodaj wiersze w df
+        # Update / add
         for fname, (fpath, fstatus) in found_files.items():
             mask = (self.df["Nazwa pliku"] == fname)
             if mask.any():
                 idx = self.df[mask].index[0]
                 self.df.loc[idx, "Status"] = fstatus
             else:
-                # nowy
+                # nowy wiersz
                 new_id = 100
                 if pd.api.types.is_numeric_dtype(self.df["ID"]):
                     if self.df["ID"].dropna().size > 0:
@@ -124,13 +155,14 @@ class ManagerApp:
                 }
                 self.df = self.df.append(new_row, ignore_index=True)
 
-        # Pliki w df, które nie występują w found_files -> Nie znaleziono
+        # Pliki w df, których nie ma w found_files -> Nie znaleziono
         for idx in self.df.index:
             fname = self.df.loc[idx, "Nazwa pliku"]
             if fname not in found_files:
                 self.df.loc[idx, "Status"] = "Nie znaleziono"
 
-        self.df.to_excel(PATH_EXCEL, index=False)
+        # Zapis z autofitem
+        self.save_excel_autofit(self.df, PATH_EXCEL)
 
     def odswiez(self):
         """
@@ -138,10 +170,12 @@ class ManagerApp:
         """
         self.sync_with_folders()
 
+        # Ponownie wczytaj (aby mieć pewność zapisu)
         self.df = pd.read_excel(PATH_EXCEL)
         self.example_data = self.df.to_dict("records")
         self.row_indices = self.df.index.tolist()
 
+        # Czyścimy table_frame
         for w in self.table_frame.winfo_children():
             w.destroy()
         self.check_vars.clear()
@@ -173,17 +207,9 @@ class ManagerApp:
 
         self.on_frame_configure(None)
 
-    def get_selected_indices(self):
-        selected = []
-        for idx, var in enumerate(self.check_vars):
-            if var.get():
-                selected.append(idx)
-        return selected
-
     # ------------------------------------------------------------------------------
-    # FUNKCJE PRZENOSZĄCE Z DOWOLNEGO FOLDERU DO KONKRETNEGO
+    # POMOC: Znajdź plik w dowolnym folderze
     # ------------------------------------------------------------------------------
-
     def find_file_in_any_folder(self, filename):
         """
         Zwraca ścieżkę do pliku 'filename' w jednym z folderów
@@ -196,6 +222,16 @@ class ManagerApp:
                 return path
         return None
 
+    def get_selected_indices(self):
+        selected = []
+        for idx, var in enumerate(self.check_vars):
+            if var.get():
+                selected.append(idx)
+        return selected
+
+    # ------------------------------------------------------------------------------
+    # PRZENOSZENIE DO W_TRAKCIE, GOTOWE, ARCHIWUM
+    # ------------------------------------------------------------------------------
     def przenies_do_w_trakcie(self):
         selected_indices = self.get_selected_indices()
         wtrakcie_files = [f for f in os.listdir(PATH_W_TRAKCIE) if f.lower().endswith(".dld")]
@@ -215,7 +251,6 @@ class ManagerApp:
                 print(f"[UWAGA] Plik '{nazwa_pliku}' nie istnieje w żadnym folderze.")
                 continue
 
-            # Jeśli plik jest już w W_trakcie, nie ma sensu przenosić
             if os.path.dirname(old_path) == PATH_W_TRAKCIE:
                 print(f"[INFO] Plik '{nazwa_pliku}' już jest w W_trakcie.")
                 continue
@@ -283,7 +318,6 @@ class ManagerApp:
     # ------------------------------------------------------------------------------
     # EDYCJA NAZWY PLIKU
     # ------------------------------------------------------------------------------
-
     def edytuj_nazwe_pliku(self):
         selected_indices = self.get_selected_indices()
         if len(selected_indices) == 0:
@@ -299,12 +333,11 @@ class ManagerApp:
 
         nowa_nazwa = simpledialog.askstring(
             "Edycja nazwy pliku",
-            f"Obecna nazwa: {stara_nazwa}\nPodaj nową nazwę (z .dld):"
+            f"Obecna nazwa: {stara_nazwa}\nPodaj nową nazwę (z rozszerzeniem .dld):"
         )
         if not nowa_nazwa:
             return
 
-        # Znajdź plik w dowolnym folderze
         old_path = self.find_file_in_any_folder(stara_nazwa)
         file_renamed = False
         if old_path:
@@ -313,11 +346,12 @@ class ManagerApp:
                 os.rename(old_path, new_path)
                 file_renamed = True
             else:
-                print(f"[UWAGA] Plik o nazwie '{nowa_nazwa}' już istnieje w tym folderze!")
+                print(f"[UWAGA] Plik '{nowa_nazwa}' już istnieje w tym folderze!")
 
-        # Aktualizuj w df
+        # Zaktualizuj w df
         self.df.loc[df_idx, "Nazwa pliku"] = nowa_nazwa
-        self.df.to_excel(PATH_EXCEL, index=False)
+        # Tu też używamy zapisu z autofit
+        self.save_excel_autofit(self.df, PATH_EXCEL)
 
         if file_renamed:
             messagebox.showinfo("OK", f"Zmieniono nazwę pliku '{stara_nazwa}' na '{nowa_nazwa}'.")
