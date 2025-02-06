@@ -1,0 +1,34 @@
+=== Wyniki dla pliku: prd.40047020.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Inside
+Grubość             = 3.0 mm
+Promień wewn.       = 18.50881 mm
+-------------------------------------------
+[MainPlane] => a=50.000000
+[SC00] => b=17.627265
+[SC01] => c=32.178115
+[DC01] => łuk=8.359598
+[DC00] => łuk=9.678201
+-------------------------------------------
+Offset (r+g)        = 21.508810 mm
+-------------------------------------------
+a (zewn.) = 50.000000 mm
+b (zewn.) = 17.627265 mm
+c (zewn.) = 32.178115 mm
+Rozwinięcie (a + b + c + ... + łuki) = 117.843179 mm
+
+a (out) = 72
+b (out) = 39
+c (out) = 54
+
+-----
+
+a (in) = 54
+b (in) = 22
+c (in) = 36
+
+-----
+
+kąty
+-90
+150

@@ -1,0 +1,3 @@
+bkuca
+DESKTOP-RHV7V5A
+2025-02-06czwartek 12:04:05

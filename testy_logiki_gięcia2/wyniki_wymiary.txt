@@ -1,0 +1,4 @@
+Plik: prd.60x30.dld
+  Komponent: MainPlane - długość: 510.367
+  Komponent: SC00 - długość: 450.367
+

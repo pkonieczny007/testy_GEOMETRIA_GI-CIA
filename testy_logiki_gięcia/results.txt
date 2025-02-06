@@ -1,3 +1,15 @@
+china.dld
+StaticComponentHull
+4 -30.064839 0 -30.064839 200 false -30.064839 200 -303.981018 200 false -303.981018 200 -303.981018 0 false -303.981018 0 -30.064839 0 false
+ShorteningContour
+4 -303.981018 0 -303.981018 200 false -303.981018 200 -316 200 false -316 200 -316 0 false -316 0 -303.981018 0 false
+
+plik.dld
+StaticComponentHull
+4 0 6.613518 200 6.613518 false 200 6.613518 200 300 false 200 300 0 300 false 0 300 0 6.613518 false
+ShorteningContour
+4 200 6.613518 0 6.613518 false 0 6.613518 0 0 false 0 0 200 0 false 200 0 200 6.613518 false
+
 prd.100dl.dld
 StaticComponentHull
 4 0 104.816478 200 104.816478 false 200 104.816478 200 200 false 200 200 0 200 false 0 200 0 104.816478 false
@@ -9,12 +21,6 @@ StaticComponentHull
 4 0 4.816478 200 4.816478 false 200 4.816478 200 200 false 200 200 0 200 false 0 200 0 4.816478 false
 ShorteningContour
 4 200 4.816478 0 4.816478 false 0 4.816478 0 0 false 0 0 200 0 false 200 0 200 4.816478 false
-
-prd.300,50dl.dld
-StaticComponentHull
-4 0 -95.18352 200 -95.18352 false 200 -95.18352 200 200 false 200 200 0 200 false 0 200 0 -95.18352 false
-ShorteningContour
-Brak danych
 
 prd.300dl.dld
 StaticComponentHull

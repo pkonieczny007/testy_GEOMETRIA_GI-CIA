@@ -1,0 +1,28 @@
+=== Wyniki dla pliku: prd.60x30.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 2.0 mm
+Promień wewn.       = 2.81648 mm
+-------------------------------------------
+[MainPlane] => a=55.183522
+[SC00] => b=25.183522
+[DC00] => łuk=5.994909
+-------------------------------------------
+Offset (r+g)        = 4.816480 mm
+-------------------------------------------
+a (zewn.) = 55.183522 mm
+b (zewn.) = 25.183522 mm
+Rozwinięcie (a + b + c + ... + łuki) = 86.361953 mm
+
+a (out) = 60
+b (out) = 30
+
+-----
+
+a (in) = 58
+b (in) = 28
+
+-----
+
+kąty
+90

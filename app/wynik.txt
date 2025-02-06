@@ -1,0 +1,14 @@
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Kąt gięcia          = 90.0°
+Grubość             = 2.0 mm
+Promień wewn.       = 2.81648 mm
+-------------------------------------------
+[MainPlane] width=200.000000  height=195.183522 => a=200.000000
+[SC00]      width=45.183522 height=200.000000 => b=45.183522
+[DC00]      width=200.000000 height=5.994909 => łuk=5.994909
+Offset (r+g)        = 4.816480 mm
+-------------------------------------------
+a (zewn.) = 200.000000 mm
+b (zewn.) = 45.183522 mm
+Rozwinięcie (a+b+łuk) = 251.178431 mm

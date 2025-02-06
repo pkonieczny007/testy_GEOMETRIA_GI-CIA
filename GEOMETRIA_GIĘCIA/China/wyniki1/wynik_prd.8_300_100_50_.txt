@@ -1,0 +1,34 @@
+=== Wyniki dla pliku: prd.8_300_100_50_.dld ===
+=== Odczyt z pliku DLD (metoda bounding box) ===
+WorkpieceDimensions = Outside
+Grubość             = 8.0 mm
+Promień wewn.       = 11.19291 mm
+-------------------------------------------
+[MainPlane] => a=111.000000
+[SC00] => b=64.702325
+[SC01] => c=33.895236
+[DC00] => łuk=23.864968
+[DC01] => łuk=21.213305
+-------------------------------------------
+Offset (r+g)        = 19.192910 mm
+-------------------------------------------
+a (zewn.) = 111.000000 mm
+b (zewn.) = 64.702325 mm
+c (zewn.) = 33.895236 mm
+Rozwinięcie (a + b + c + ... + łuki) = 254.675834 mm
+
+a (out) = 130
+b (out) = 84
+c (out) = 53
+
+-----
+
+a (in) = 123
+b (in) = 77
+c (in) = 46
+
+-----
+
+kąty
+90
+-100
