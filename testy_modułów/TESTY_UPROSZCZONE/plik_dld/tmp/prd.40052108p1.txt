@@ -1,0 +1,16 @@
+=== DANE ODCZYTANE Z PLIKU DLD ===
+Nazwa pliku DLD: prd.40052108p1.dld
+Grubość: 3.0 mm
+Promień wewn.: 7.70931 mm
+Kąt: 120.0 st.
+------------------------------------
+a (zewn.) = 169.035989 mm
+b (zewn.) = -63.96401 mm
+------------------------------------
+a (out) = 175.22 mm
+b (out) = -57.78 mm
+-----
+a (in)  = 178.68 mm
+b (in)  = -54.32 mm
+-----
+Rozwinięcie (łuk po neutralnej) = 19.29 mm
