@@ -10,17 +10,18 @@ def normalize_angle(angle_deg):
 
 def compute_inside_dimensions(file_name, df_odcinki):
     """
-    Dla detalu file_name z wyniki_odcinki_v3.xlsx pobiera wiersze z odcinka nr 2 i dzieli je na:
-      - bazowe wartości (StaticComponentHull)
-      - wartości DC (ShorteningContour, Komponent zaczyna się od "DC")
-    Następnie, jeśli:
-      * liczba bazowych wartości wynosi 2 i mamy 1 wartość DC:
-             new[0] = baza[0] + DC[0]
-             new[1] = baza[1] + DC[0]
-      * jeżeli liczba bazowych wartości > 2 i liczba DC = (liczba_baz - 1):
-             new[0] = baza[0] + DC[0]
-             dla i = 1..(n-2): new[i] = DC[i-1] + baza[i] + DC[i]
-             new[n-1] = baza[-1] + DC[-1]
+    Dla danego detalu (file_name) z wyniki_odcinki_v3.xlsx
+    pobiera wiersze z odcinka nr 2 i dzieli je na:
+      - bazowe wartości (pochodzące z StaticComponentHull)
+      - wartości DC (pochodzące z ShorteningContour, Komponent zaczyna się od "DC")
+    Następnie, przyjmując, że liczba bazowych wartości = n, wylicza nowe wymiary wewnętrzne wg:
+      - Jeśli n == 2 i 1 wartość DC:
+            new[0] = baza[0] + DC[0]
+            new[1] = baza[1] + DC[0]
+      - Jeśli n > 2 i liczba DC = n - 1:
+            new[0] = baza[0] + DC[0]
+            dla i = 1..(n-2): new[i] = DC[i-1] + baza[i] + DC[i]
+            new[n-1] = baza[-1] + DC[-1]
     Zwraca ciąg liczb oddzielonych przecinkami (zaokrąglonych do 6 miejsc).
     """
     df_file = df_odcinki[df_odcinki["Nazwa pliku"] == file_name]
@@ -39,6 +40,7 @@ def compute_inside_dimensions(file_name, df_odcinki):
     # Pobieramy wartości DC z ShorteningContour (Komponent zaczyna się od "DC")
     df_dc = df_seg2[(df_seg2["Źródło outline"] == "ShorteningContour") &
                     (df_seg2["Komponent"].str.startswith("DC"))]
+    # Tu nie usuwamy duplikatów – gdyż w tym wariancie chcemy zachować kolejność
     dc_values = []
     for _, row in df_dc.iterrows():
         try:
@@ -57,24 +59,22 @@ def compute_inside_dimensions(file_name, df_odcinki):
             computed_dims.append(dc_values[i-1] + base_values[i] + dc_values[i])
         computed_dims.append(base_values[-1] + dc_values[-1])
     else:
-        computed_dims = base_values
+        computed_dims = base_values  # jeżeli schemat nie pasuje
     return ",".join(str(round(x, 6)) for x in computed_dims)
 
 def compute_dc_shortening(file_name, df_odcinki):
     """
-    Dla danego detalu (file_name) z wyniki_odcinki_v3.xlsx pobiera wiersze z odcinka nr 2,
-    gdzie "Źródło outline" = "ShorteningContour" oraz Komponent zaczyna się od "DC".
-    Dzięki drop_duplicates (opcjonalnie – zakomentowana linia) można usunąć dokładne duplikaty.
-    Zwraca ciąg wartości z kolumny "Długość łuku" oddzielonych przecinkami,
-    zaokrąglonych do 2 miejsc (np. "4.55,3.82").
+    Dla danego detalu (file_name) z wyniki_odcinki_v3.xlsx
+    pobiera wiersze dla odcinka nr 2, gdzie "Źródło outline" to "ShorteningContour"
+    oraz Komponent zaczyna się od "DC". Teraz – dodatkowo – usuwamy duplikaty
+    (według kolumny "Komponent") i zwracamy ciąg wartości z kolumny "Długość łuku"
+    oddzielonych przecinkami, zaokrąglonych do 2 miejsc (np. "4.55,3.82").
     """
     df_file = df_odcinki[df_odcinki["Nazwa pliku"] == file_name]
     df_dc = df_file[(df_file["Odcinek nr"] == 2) &
                     (df_file["Źródło outline"] == "ShorteningContour") &
                     (df_file["Komponent"].str.startswith("DC"))]
-    # Jeśli chcemy usunąć dokładne duplikaty, można użyć drop_duplicates;
-    # w tej wersji chcemy zachować wszystkie wiersze, dlatego linia jest zakomentowana.
-    # df_dc = df_dc.drop_duplicates(subset=["Komponent"])
+    df_dc = df_dc.drop_duplicates(subset=["Komponent"])
     dc_values = []
     for _, row in df_dc.iterrows():
         try:
@@ -125,38 +125,43 @@ def compute_bending_angles_from_xml(file_name):
 
 def compute_grouped_dimensions(file_name, df_odcinki):
     """
-    Funkcja grupuje dane z odcinka nr 2 dla danego detalu (file_name) z wyniki_odcinki_v3.xlsx.
-    Przyjmujemy, że wiersze są uporządkowane zgodnie ze strukturą XML.
-    Dla każdego wiersza, w którym "Źródło outline" (przy ujednoliceniu) to "STATICCOMPONENTHULL",
-    rozpoczynamy nową grupę, przypisując jej wartość statyczną.
-    Następnie, kolejne wiersze, gdzie "Źródło outline" to "SHORTENINGCONTOUR" i Komponent zaczyna się od "DC",
-    dodajemy do bieżącej grupy – każdy wiersz jest traktowany osobno.
-    Funkcja zwraca tekstowy raport zawierający:
-       {StaticComponent}: static={static_value}, DC count={ile_dc}, DC values: {lista DC (zaokrąglonych do 2 miejsc)};
-       Computed dims: {lista computed dims (static + każdy DC)}.
+    Funkcja grupuje dane z odcinka nr 2 dla danego pliku (file_name) z wyniki_odcinki_v3.xlsx.
+    Iteruje w kolejności – przyjmujemy, że wiersze są zapisane zgodnie z kolejnością występowania w XML.
+    
+    Dla każdego wiersza, gdzie "Źródło outline" = "StaticComponentHull" (czyli statyczny komponent),
+    rozpoczyna nową grupę. Następnie, kolejne wiersze, gdzie "Źródło outline" = "ShorteningContour" i
+    Komponent zaczyna się od "DC", dodawane są do bieżącej grupy (przy czym usuwamy duplikaty według nazwy).
+    
+    Dla każdej grupy wylicza:
+      - Liczbę przypisanych skróceń (DC)
+      - Listę DC w postaci "DCxx=<value>" (zaokrąglonych do 2 miejsc)
+      - Dla każdego DC oblicza computed_value = (wartość z StaticComponentHull) + (wartość DC)
+    
+    Zwraca tekstowy raport z grup, oddzielonych nowymi liniami.
     """
     df_file = df_odcinki[df_odcinki["Nazwa pliku"] == file_name]
     df_seg2 = df_file[df_file["Odcinek nr"] == 2]
     
     groups = []
     current_group = None
-    # Iterujemy, ujednolicając wartości źródła i komponentu do uppercase
     for idx, row in df_seg2.iterrows():
-        source = str(row["Źródło outline"]).strip().upper()
-        comp = str(row["Komponent"]).strip().upper()
+        source = row["Źródło outline"]
+        comp = row["Komponent"]
         try:
             value = float(str(row["Długość łuku"]).replace(',', '.'))
         except:
             continue
-        if source == "STATICCOMPONENTHULL":
+        if source == "StaticComponentHull":
+            # Nowa grupa – zapisz poprzednią, jeśli istnieje
             if current_group is not None:
                 groups.append(current_group)
-            current_group = {"static": comp, "static_value": value, "dc": [], "dc_order": []}
-        elif source == "SHORTENINGCONTOUR" and comp.startswith("DC"):
+            current_group = {"static": comp, "static_value": value, "dc": {}, "dc_order": []}
+        elif source == "ShorteningContour" and comp.startswith("DC"):
             if current_group is not None:
-                # Dodajemy każdy wiersz – nie usuwamy duplikatów
-                current_group["dc"].append(value)
-                current_group["dc_order"].append(comp)
+                # Dodajemy tylko jeśli jeszcze nie wystąpiło dla tego DC
+                if comp not in current_group["dc"]:
+                    current_group["dc"][comp] = value
+                    current_group["dc_order"].append(comp)
     if current_group is not None:
         groups.append(current_group)
     
@@ -164,15 +169,17 @@ def compute_grouped_dimensions(file_name, df_odcinki):
     for group in groups:
         static_comp = group["static"]
         static_val = group["static_value"]
+        dc_dict = group["dc"]
         dc_order = group["dc_order"]
-        dc_values = group["dc"]
         count_dc = len(dc_order)
+        # Obliczamy computed value dla każdych przypisanych DC
         computed_values = []
         dc_values_str = []
-        for i in range(count_dc):
-            computed = static_val + dc_values[i]
+        for dc_comp in dc_order:
+            dc_val = dc_dict[dc_comp]
+            computed = static_val + dc_val
             computed_values.append(computed)
-            dc_values_str.append(f"{dc_order[i]}={round(dc_values[i],2)}")
+            dc_values_str.append(f"{dc_comp}={round(dc_val,2)}")
         line = (f"{static_comp}: static={round(static_val,6)}, DC count={count_dc}, "
                 f"DC values: {', '.join(dc_values_str)}; "
                 f"Computed dims: {', '.join(str(round(x,6)) for x in computed_values)}")
@@ -187,6 +194,7 @@ def main():
         print("Błąd wczytywania plików Excel:", e)
         return
     
+    # Skrypt testowy – działamy na danych z wyniki_zw_v3.xlsx
     df_test = df_zw.copy()
     computed_dimensions_list = []
     dc_shortening_list = []
@@ -196,18 +204,22 @@ def main():
     for idx, row in df_test.iterrows():
         file_name = row["Nazwa pliku"]
         typ = str(row["Typ"]).strip().lower()
+        # Jeśli typ = "inside", obliczamy wymiary wewnętrzne (metodą compute_inside_dimensions)
         if typ == "inside":
             computed_dim = compute_inside_dimensions(file_name, df_odcinki)
             computed_dimensions_list.append(computed_dim)
         else:
             computed_dimensions_list.append("")
         
+        # Obliczamy DC Shortening – korzystamy z funkcji compute_dc_shortening (bez duplikatów)
         dc_val = compute_dc_shortening(file_name, df_odcinki)
         dc_shortening_list.append(dc_val)
         
+        # Obliczamy kąty gięcia z pliku XML
         angles_val = compute_bending_angles_from_xml(file_name)
         bending_angles_list.append(angles_val)
         
+        # Grupujemy dane – dla każdego statycznego komponentu (WorkpieceComponentName)
         grouped_dims = compute_grouped_dimensions(file_name, df_odcinki)
         grouped_dimensions_list.append(grouped_dims)
     
