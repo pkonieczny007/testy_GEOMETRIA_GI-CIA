@@ -1,3 +1,58 @@
+poprawilem program 
+ale 
+podaje zle wymiary zewnetrzne i wewnetrzne
+
+(zmien nazwy wynikow_doloz dopisek _o1 zamiast v3)
+
+napisz w jaki sposob sa one pobierane.
+Wydaje mi sie ze dzialasz wg zlych zalozen
+
+Popraw wg wytycznych:
+
+!gdy plik jest tworzony wg Outside
+
+wyliczanie wymiarow zewnetrznych to 
+
+potrzebujesz wymiary te same ktore zapisujesz w kolumnie Wymiary (StaticComponentHull)
+) dodając do nich ShorteningContour
+
+skrajne to 
+
+StaticComponentHull+ShorteningContour
+a 
+pomiedzy nimi sa 
+
+ShorteningContour+StaticComponentHull+ShorteningContour
+
+np gdy Wymiary to 55.18,25.18 dla prd.60x30.dld
+
+to wym zewnetrzy mamy 
+ 60 i 30
+
+ dodane MainPlane+DC00 i 
+ SC00+DC00 
+MainPlane  55,183522
+DC00 4,816478
+SC00 25,183522
+DC00 4,816478
+
+Wszyskto z Odcinek nr2
+
+!gdy plik jest tworzony wg inside
+
+to w taki sposob mamy wymiar wewnetrzny.
+
+--------------
+
+- Sprobuj poprawic na razie wymiar zewnetrzny dla outside 
+i wewnetrzny dla inside
+
+- dołóz kooumne typ
+i napisz jaki to typ wymiarow Inside, outside
+
+z 
+<WorkpieceDimensions unit="Enumeration" value="Outside"/>
+
 import os
 import glob
 import math
@@ -131,14 +186,13 @@ def process_summary(filepath, detailed_rows):
     Przetwarza plik XML i zwraca słownik z danymi podsumowania:
       - Nazwa pliku
       - Liczba odcinków (liczba BendStep + 1)
-      - Wymiary zewnetrzne lub wewnętrzne (wyliczone według wytycznych)
+      - Wymiary zewnetrzne, Wymiary wewnętrzne
       - Promień wewnętrzny
       - Długość złamu (pierwszy BendLength)
       - Rozwinięcie wyliczeniowe – suma długości odcinka nr 2 z wybranych źródeł
       - Rozwinięcie z pliku – BlankLength z BendSequence
-      - Wymiary – dla StaticComponentHull (odcinek nr 2) (kolumna pomocnicza)
-      - Łuki – dla VDeformableComponentHulls (odcinek nr 1) (kolumna pomocnicza)
-      - Typ – rodzaj wymiarowania (Inside lub Outside)
+      - Wymiary – dla każdego StaticComponentHull (odcinek nr 2) – zaokrąglone do dwóch miejsc po przecinku
+      - Łuki – dla każdego VDeformableComponentHulls (odcinek nr 1) – zaokrąglone do jednej cyfry po przecinku
     """
     summary = {}
     filename = os.path.basename(filepath)
@@ -159,9 +213,9 @@ def process_summary(filepath, detailed_rows):
     else:
         summary["Liczba odcinkow"] = None
 
-    # Odczyt trybu wymiarowania i WorkpieceName oraz grubości
+    # Wymiary – próba odczytu z WorkpieceName
     workpiece = root.find(".//Workpiece")
-    thickness = 0
+    thickness = None
     dims_mode = ""
     if workpiece is not None:
         wp_name_elem = workpiece.find("WorkpieceName")
@@ -173,48 +227,55 @@ def process_summary(filepath, detailed_rows):
             except ValueError:
                 thickness = 0
         dims_mode = wp_dims_elem.attrib.get("value", "") if wp_dims_elem is not None else ""
-        wp_name = wp_name_elem.attrib.get("value", "") if wp_name_elem is not None else ""
+        if wp_name_elem is not None:
+            wp_name = wp_name_elem.attrib.get("value", "")
+        else:
+            wp_name = ""
     else:
         wp_name = ""
-    summary["Typ"] = dims_mode  # dodajemy typ wymiarowania
+        dims_mode = ""
+        thickness = 0
 
-    # Obliczanie wymiarów na podstawie odcinka nr 2 z StaticComponentHull
-    base_dims = {}
-    for row in detailed_rows:
-        if row[0] == filename and row[2] == "StaticComponentHull" and row[3] == 2:
-            comp = row[1]
-            try:
-                base_dims[comp] = float(row[10])
-            except:
-                continue
+    parts = wp_name.split("x")
+    if len(parts) >= 3:
+        try:
+            ext_dims = [float(parts[0].replace(',', '.')),
+                        float(parts[1].replace(',', '.')),
+                        float(parts[2].replace(',', '.'))]
+        except ValueError:
+            ext_dims = []
+    else:
+        # Jeśli nazwa nie zawiera oczekiwanego formatu, wyliczamy wymiary na podstawie MainPlane.
+        main_planes = []
+        for sc in root.findall(".//StaticComponent"):
+            comp_name_elem = sc.find("WorkpieceComponentName")
+            if comp_name_elem is not None and comp_name_elem.attrib.get("value") == "MainPlane":
+                main_planes.append(sc)
+        pts = []
+        for mp in main_planes:
+            hull = mp.find("StaticComponentPart/StaticComponentHull")
+            if hull is not None:
+                segs = parse_outline(hull.attrib.get("value", ""))
+                for (x1, y1, x2, y2, _, _) in segs:
+                    pts.append((x1, y1))
+                    pts.append((x2, y2))
+        if pts:
+            xs = [pt[0] for pt in pts]
+            ys = [pt[1] for pt in pts]
+            width = round(max(xs) - min(xs), 2)
+            height = round(max(ys) - min(ys), 2)
+            # Przyjmujemy trzeci wymiar równy grubości (jeśli dostępna)
+            ext_dims = [width, height, thickness if thickness is not None else 0]
+        else:
+            ext_dims = []
 
-    if dims_mode.lower() == "outside":
-        # Dla Outside wymiar zewnetrzny = base (StaticComponentHull) + ShorteningContour (odcinek nr 2) z komponentu DC (np. DC00)
-        dc_val = None
-        for row in detailed_rows:
-            if (row[0] == filename and row[2] == "ShorteningContour" and row[3] == 2 
-                and row[1].startswith("DC")):
-                try:
-                    dc_val = float(row[10])
-                except:
-                    continue
-                break
-        ext_dims = {}
-        if dc_val is not None:
-            for comp, val in base_dims.items():
-                ext_dims[comp] = val + dc_val
-        if ext_dims:
-            summary["Wymiary zewnetrzne"] = ",".join(str(round(ext_dims[k], 2)) for k in sorted(ext_dims.keys()))
+    if ext_dims and len(ext_dims) == 3:
+        summary["Wymiary zewnetrzne"] = ",".join(str(x) for x in ext_dims)
+        if dims_mode.lower() == "outside":
+            int_dims = [round(ext_dims[0] - thickness, 3), round(ext_dims[1] - 2 * thickness, 3), round(ext_dims[2] - thickness, 3)]
         else:
-            summary["Wymiary zewnetrzne"] = ""
-        summary["Wymiary wewnętrzne"] = ""
-    elif dims_mode.lower() == "inside":
-        # Dla Inside przyjmujemy wartości z StaticComponentHull (odcinek nr 2) jako wymiary wewnętrzne
-        if base_dims:
-            summary["Wymiary wewnętrzne"] = ",".join(str(round(base_dims[k], 2)) for k in sorted(base_dims.keys()))
-        else:
-            summary["Wymiary wewnętrzne"] = ""
-        summary["Wymiary zewnetrzne"] = ""
+            int_dims = [round(x, 3) for x in ext_dims]
+        summary["Wymiary wewnętrzne"] = ",".join(str(x) for x in int_dims)
     else:
         summary["Wymiary zewnetrzne"] = ""
         summary["Wymiary wewnętrzne"] = ""
@@ -259,13 +320,23 @@ def process_summary(filepath, detailed_rows):
                 pass
     summary["Rozwinięcie wyliczeniowe"] = round(computed_unfolding, 6) if computed_unfolding else None
 
-    # Nowa kolumna "Wymiary" – pomocnicza, pobieramy wartości z StaticComponentHull (odcinek nr 2)
-    if base_dims:
-        summary["Wymiary"] = ",".join(str(round(base_dims[k], 2)) for k in sorted(base_dims.keys()))
+    # Nowa kolumna "Wymiary" – zbieramy, dla każdego unikalnego StaticComponentHull, odcinek nr 2
+    wymiary_list = {}
+    for row in detailed_rows:
+        if row[0] == filename and row[2] == "StaticComponentHull" and row[3] == 2:
+            comp = row[1]
+            try:
+                val = float(row[10])
+            except:
+                continue
+            wymiary_list[comp] = val
+    if wymiary_list:
+        wymiary_str = ",".join(str(round(wymiary_list[k],2)) for k in sorted(wymiary_list.keys()))
     else:
-        summary["Wymiary"] = ""
+        wymiary_str = ""
+    summary["Wymiary"] = wymiary_str
 
-    # Nowa kolumna "Łuki" – pomocnicza, pobieramy dla każdego unikalnego VDeformableComponentHulls, odcinek nr 1
+    # Nowa kolumna "Łuki" – dla każdego unikalnego VDeformableComponentHulls, odcinek nr 1
     luke_list = {}
     for row in detailed_rows:
         if row[0] == filename and row[2] == "VDeformableComponentHulls" and row[3] == 1:
@@ -276,9 +347,10 @@ def process_summary(filepath, detailed_rows):
                 continue
             luke_list[comp] = val
     if luke_list:
-        summary["Łuki"] = ",".join(str(round(luke_list[k], 1)) for k in sorted(luke_list.keys()))
+        luke_str = ",".join(str(round(luke_list[k],1)) for k in sorted(luke_list.keys()))
     else:
-        summary["Łuki"] = ""
+        luke_str = ""
+    summary["Łuki"] = luke_str
 
     return summary
 
@@ -311,7 +383,7 @@ def main():
     summary_columns = [
         "Nazwa pliku", "Liczba odcinkow", "Wymiary zewnetrzne", "Wymiary wewnętrzne",
         "Promień wewnętrzny", "Długość złamu", "Rozwinięcie wyliczeniowe", "Rozwinięcie z pliku",
-        "Wymiary", "Łuki", "Typ"
+        "Wymiary", "Łuki"
     ]
     df_summary = pd.DataFrame(summaries, columns=summary_columns)
     output_summary = "wyniki_zw_v3.xlsx"
