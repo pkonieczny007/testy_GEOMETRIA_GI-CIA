@@ -131,14 +131,14 @@ def process_summary(filepath, detailed_rows):
     Przetwarza plik XML i zwraca słownik z danymi podsumowania:
       - Nazwa pliku
       - Liczba odcinków (liczba BendStep + 1)
-      - Wymiary zewnetrzne lub wewnętrzne (wyliczone wg wytycznych)
+      - Wymiary zewnetrzne lub wewnętrzne (wyliczone według wytycznych)
       - Promień wewnętrzny
       - Długość złamu (pierwszy BendLength)
       - Rozwinięcie wyliczeniowe – suma długości odcinka nr 2 z wybranych źródeł
       - Rozwinięcie z pliku – BlankLength z BendSequence
-      - Kolumna pomocnicza "Wymiary" – wartości z StaticComponentHull (odcinek nr 2)
-      - Kolumna pomocnicza "Łuki" – wartości z VDeformableComponentHulls (odcinek nr 1)
-      - Typ – tryb wymiarowania (Inside lub Outside)
+      - Wymiary – dla StaticComponentHull (odcinek nr 2) (kolumna pomocnicza)
+      - Łuki – dla VDeformableComponentHulls (odcinek nr 1) (kolumna pomocnicza)
+      - Typ – rodzaj wymiarowania (Inside lub Outside)
     """
     summary = {}
     filename = os.path.basename(filepath)
@@ -159,7 +159,7 @@ def process_summary(filepath, detailed_rows):
     else:
         summary["Liczba odcinkow"] = None
 
-    # Odczyt trybu wymiarowania, WorkpieceName oraz grubości
+    # Odczyt trybu wymiarowania i WorkpieceName oraz grubości
     workpiece = root.find(".//Workpiece")
     thickness = 0
     dims_mode = ""
@@ -176,43 +176,44 @@ def process_summary(filepath, detailed_rows):
         wp_name = wp_name_elem.attrib.get("value", "") if wp_name_elem is not None else ""
     else:
         wp_name = ""
-    summary["Typ"] = dims_mode  # zapisujemy typ wymiarowania
+    summary["Typ"] = dims_mode  # dodajemy typ wymiarowania
 
-    # Pobieramy listę wartości z StaticComponentHull (odcinek nr 2) – kolejno jak występują w detailed_rows
-    base_list = []
+    # Obliczanie wymiarów na podstawie odcinka nr 2 z StaticComponentHull
+    base_dims = {}
     for row in detailed_rows:
         if row[0] == filename and row[2] == "StaticComponentHull" and row[3] == 2:
+            comp = row[1]
             try:
-                base_list.append(float(row[10]))
+                base_dims[comp] = float(row[10])
             except:
                 continue
 
     if dims_mode.lower() == "outside":
-        # Pobieramy listę wartości z ShorteningContour (odcinek nr 2) dla komponentów DC (w kolejności)
-        dc_list = []
+        # Dla Outside wymiar zewnetrzny = base (StaticComponentHull) + ShorteningContour (odcinek nr 2) z komponentu DC (np. DC00)
+        dc_val = None
         for row in detailed_rows:
-            if row[0] == filename and row[2] == "ShorteningContour" and row[3] == 2 and row[1].startswith("DC"):
+            if (row[0] == filename and row[2] == "ShorteningContour" and row[3] == 2 
+                and row[1].startswith("DC")):
                 try:
-                    dc_list.append(float(row[10]))
+                    dc_val = float(row[10])
                 except:
                     continue
-        # Załóżmy, że liczba wartości DC powinna być równa (liczba bazowych - 1)
-        ext_dims = []
-        if base_list and (len(base_list) - 1 == len(dc_list)):
-            # Pierwszy wymiar zewnętrzny
-            ext_dims.append(base_list[0] + dc_list[0])
-            # Wymiary środkowe (jeśli istnieją)
-            for i in range(1, len(base_list)-1):
-                ext_dims.append(dc_list[i-1] + base_list[i] + dc_list[i])
-            # Ostatni wymiar zewnętrzny
-            ext_dims.append(dc_list[-1] + base_list[-1])
+                break
+        ext_dims = {}
+        if dc_val is not None:
+            for comp, val in base_dims.items():
+                ext_dims[comp] = val + dc_val
+        if ext_dims:
+            summary["Wymiary zewnetrzne"] = ",".join(str(round(ext_dims[k], 2)) for k in sorted(ext_dims.keys()))
         else:
-            ext_dims = []
-        summary["Wymiary zewnetrzne"] = ",".join(str(round(x, 6)) for x in ext_dims) if ext_dims else ""
+            summary["Wymiary zewnetrzne"] = ""
         summary["Wymiary wewnętrzne"] = ""
     elif dims_mode.lower() == "inside":
-        # Dla Inside przyjmujemy bez modyfikacji wartości z StaticComponentHull (odcinek nr 2)
-        summary["Wymiary wewnętrzne"] = ",".join(str(round(x, 6)) for x in base_list) if base_list else ""
+        # Dla Inside przyjmujemy wartości z StaticComponentHull (odcinek nr 2) jako wymiary wewnętrzne
+        if base_dims:
+            summary["Wymiary wewnętrzne"] = ",".join(str(round(base_dims[k], 2)) for k in sorted(base_dims.keys()))
+        else:
+            summary["Wymiary wewnętrzne"] = ""
         summary["Wymiary zewnetrzne"] = ""
     else:
         summary["Wymiary zewnetrzne"] = ""
@@ -258,12 +259,13 @@ def process_summary(filepath, detailed_rows):
                 pass
     summary["Rozwinięcie wyliczeniowe"] = round(computed_unfolding, 6) if computed_unfolding else None
 
-    # Kolumna pomocnicza "Wymiary" – zapisujemy wartości z StaticComponentHull (odcinek nr 2)
-    if base_list:
-        summary["Wymiary"] = ",".join(str(round(x, 6)) for x in base_list)
+    # Nowa kolumna "Wymiary" – pomocnicza, pobieramy wartości z StaticComponentHull (odcinek nr 2)
+    if base_dims:
+        summary["Wymiary"] = ",".join(str(round(base_dims[k], 2)) for k in sorted(base_dims.keys()))
     else:
         summary["Wymiary"] = ""
-    # Kolumna pomocnicza "Łuki" – pobieramy dla każdego unikalnego VDeformableComponentHulls, odcinek nr 1
+
+    # Nowa kolumna "Łuki" – pomocnicza, pobieramy dla każdego unikalnego VDeformableComponentHulls, odcinek nr 1
     luke_list = {}
     for row in detailed_rows:
         if row[0] == filename and row[2] == "VDeformableComponentHulls" and row[3] == 1:

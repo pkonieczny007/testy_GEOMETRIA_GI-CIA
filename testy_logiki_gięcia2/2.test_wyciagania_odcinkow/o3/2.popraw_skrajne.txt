@@ -1,0 +1,10 @@
+
+Błędnie wylicza wymiary zewnetrzne i wewnetrzne
+
+Wg mnie powodem jest zle okreslanie wymiarow skrajnych 
+
+- bierzemy pod uwagę tylko odcinki z odcinek nr2, 
+- i StaticComponentHull
+
+interesuje nas czy Długość łuku jest skrajna czyli czy dochodzi do niego jedno gięcie czy 2 giecia DC
+ShorteningContour

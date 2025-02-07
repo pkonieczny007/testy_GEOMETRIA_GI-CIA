@@ -1,12 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Przykładowy skrypt generujący dwa pliki Excela:
-1) wyniki_odcinki_o1.xlsx – dane szczegółowe każdego odcinka
-2) wyniki_zw_o1.xlsx – zestawienie w formie wskazanej w pytaniu
-   z kolumnami:
-   Nazwa pliku, Liczba odcinkow, Wymiary zewnetrzne, Wymiary wewnętrzne,
-   Promień wewnętrzny, Długość złamu, Rozwinięcie wyliczeniowe, Rozwinięcie z pliku,
-   Wymiary, Łuki, Typ
+Przykładowy kompletny skrypt z poprawnym liczeniem "skrajnych" i "środkowych" wymiarów
+wg reguły:
+   - Pierwszy statyczny segment + DC0 = wymiar skrajny lewy
+   - DC0 + kolejny statyczny + DC1 = wymiar środkowy
+   - DC(n-2) + ostatni statyczny = skrajny prawy
+itp.
+
+Generuje dwa pliki:
+  1) wyniki_odcinki_o1.xlsx – dane szczegółowe
+  2) wyniki_zw_o1.xlsx       – podsumowanie z wyliczonymi wymiarami.
 """
 
 import os
@@ -17,9 +20,10 @@ import pandas as pd
 
 def parse_outline(outline_str):
     """
-    Funkcja do parsowania atrybutu 'value' np. "4 x1 y1 x2 y2 bool x1 y1 x2 y2 bool ..."
-    lub "1 Outline 4 x1 y1 x2 y2 bool ...".
-    Zwraca listę (x1, y1, x2, y2, is_arc, chord_length).
+    Funkcja do parsowania atrybutu 'value' np.:
+      "4 x1 y1 x2 y2 bool x1 y1 x2 y2 bool ..."
+      lub "1 Outline 4 x1 y1 x2 y2 bool ..."
+    Zwraca listę krotek: (x1, y1, x2, y2, is_arc, chord_length).
     """
     outline_str = outline_str.replace(",", ".")
     tokens = outline_str.split()
@@ -43,7 +47,7 @@ def parse_outline(outline_str):
 
     segments = []
     for i in range(n_segments):
-        idx = start_index + i*5
+        idx = start_index + i * 5
         chunk = tokens[idx:idx+5]
         if len(chunk) < 5:
             continue
@@ -55,6 +59,7 @@ def parse_outline(outline_str):
             is_arc = (chunk[4].lower() == "true")
         except ValueError:
             continue
+
         chord_length = math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
         segments.append((x1, y1, x2, y2, is_arc, chord_length))
 
@@ -63,14 +68,14 @@ def parse_outline(outline_str):
 
 def process_file(filepath):
     """
-    Zwraca listę wierszy szczegółowych:
+    Przetwarza jeden plik .dld i zwraca listę WIERZY:
       [filename, component, source, odcinek_nr,
        x1, y1, x2, y2, is_arc, chord_len, arc_len, skrajny_bool]
     """
     results = []
     filename = os.path.basename(filepath)
 
-    # Odczyt XML
+    # Parsowanie XML
     try:
         tree = ET.parse(filepath)
         root = tree.getroot()
@@ -80,8 +85,8 @@ def process_file(filepath):
 
     # --- StaticComponent ---
     for static_comp in root.findall(".//StaticComponent"):
-        comp_name_elem = static_comp.find("WorkpieceComponentName")
-        comp_name = comp_name_elem.attrib.get("value","") if comp_name_elem is not None else ""
+        wcn_elem = static_comp.find("WorkpieceComponentName")
+        comp_name = wcn_elem.attrib.get("value","") if wcn_elem is not None else ""
 
         # (A) StaticComponentHull
         hull_elem = static_comp.find("StaticComponentPart/StaticComponentHull")
@@ -97,11 +102,11 @@ def process_file(filepath):
                 ])
 
         # (B) DeformableCompShortening -> ShorteningContour
-        def_comp = static_comp.find("DeformableCompShortening")
-        if def_comp is not None:
-            dc_name_elem = def_comp.find("DeformableComponentName")
-            dc_name = dc_name_elem.attrib.get("value","") if dc_name_elem is not None else ""
-            sc_elem = def_comp.find("ShorteningContour")
+        defc = static_comp.find("DeformableCompShortening")
+        if defc is not None:
+            dcn_elem = defc.find("DeformableComponentName")
+            dc_name = dcn_elem.attrib.get("value","") if dcn_elem is not None else ""
+            sc_elem = defc.find("ShorteningContour")
             if sc_elem is not None:
                 segs = parse_outline(sc_elem.attrib.get("value",""))
                 nseg = len(segs)
@@ -115,13 +120,13 @@ def process_file(filepath):
 
     # --- VDeformableComponent ---
     for vdef in root.findall(".//VDeformableComponent"):
-        comp_name_elem = vdef.find("WorkpieceComponentName")
-        comp_name = comp_name_elem.attrib.get("value","") if comp_name_elem is not None else ""
+        wcn_elem = vdef.find("WorkpieceComponentName")
+        comp_name = wcn_elem.attrib.get("value","") if wcn_elem is not None else ""
 
         # (A) BendLine
-        bend_line_elem = vdef.find("VDeformableComponentBendLine")
-        if bend_line_elem is not None:
-            segs = parse_outline(bend_line_elem.attrib.get("value",""))
+        bl_elem = vdef.find("VDeformableComponentBendLine")
+        if bl_elem is not None:
+            segs = parse_outline(bl_elem.attrib.get("value",""))
             nseg = len(segs)
             for i,(x1,y1,x2,y2,is_arc,ch_len) in enumerate(segs):
                 arc_len = ch_len
@@ -138,7 +143,7 @@ def process_file(filepath):
             nseg = len(segs)
             arc_val = None
             if comp_name.startswith("DC") and nseg>0:
-                # z definicji - arcLength = x2 z pierwszego segmentu
+                # definicja: arcLength = x2 z pierwszego segmentu
                 arc_val = segs[0][2]
             for i,(x1,y1,x2,y2,is_arc,ch_len) in enumerate(segs):
                 if arc_val is not None:
@@ -154,18 +159,106 @@ def process_file(filepath):
     return results
 
 
+def compute_dimensions_skrajne_srodkowe(
+    static_list, dc_list,
+    dimension_mode="Outside"
+):
+    """
+    Funkcja przyjmująca dwie listy:
+      static_list = [(komponent, arc_len), (komponent, arc_len), ...]  – odcinek nr 2
+      dc_list     = [(komponent, arc_len), (komponent, arc_len), ...]  – odcinek nr 2
+    ułożone w KOLEJNOŚCI logicznej:
+      np. static_list = [ (MainPlane, 95.44915),
+                          (SC00, 17.627265),
+                          (SC01, 32.178115) ]
+          dc_list     = [ (DC00, X), (DC01, Y) ]
+
+    Wynik: listę floatów reprezentujących:
+      - skrajny lewy = static0 + DC0
+      - środkowy = DC0 + static1 + DC1
+      - skrajny prawy = DC1 + static2
+    (dla 3 statycznych i 2 DC).
+    Jeśli jest inna liczba segmentów, można to uogólnić pętlą.
+
+    dimension_mode: "Outside" lub "Inside" – ewentualnie możemy wstawić
+                    korekty (np. -grubość) przy Inside.
+    """
+    # Upewniamy się, że mamy min. 3 statics i 2 DC (w tym przykładzie)
+    # Jeśli w pliku jest inna liczba – dopasuj poniższą logikę.
+    dims = []
+
+    n_static = len(static_list)
+    n_dc = len(dc_list)
+
+    # Przykład: 3 statics, 2 DC
+    # i=0: skrajny lewy -> static[0] + dc[0]
+    # i=1: środkowy -> dc[0] + static[1] + dc[1]
+    # i=2: skrajny prawy -> dc[1] + static[2]
+
+    if n_static == 3 and n_dc == 2:
+        s0 = static_list[0][1]
+        s1 = static_list[1][1]
+        s2 = static_list[2][1]
+        dc0 = dc_list[0][1]
+        dc1 = dc_list[1][1]
+
+        left  = s0 + dc0
+        mid   = dc0 + s1 + dc1
+        right = dc1 + s2
+
+        dims = [left, mid, right]
+
+    else:
+        # Jeżeli chcesz bardziej ogólne podejście do n segmentów:
+        #   0: static[0] + dc[0]
+        #   i in [1..n-2]: dc[i-1] + static[i] + dc[i]
+        #   n-1: dc[n-2] + static[n-1]
+        # implementacja pętli:
+        dims_tmp = []
+        for i in range(n_static):
+            if i == 0:
+                # skrajny lewy
+                if n_dc > 0:
+                    dims_tmp.append(static_list[i][1] + dc_list[0][1])
+                else:
+                    dims_tmp.append(static_list[i][1])
+            elif i == n_static - 1:
+                # skrajny prawy
+                dc_idx = i - 1
+                if dc_idx >= 0 and dc_idx < n_dc:
+                    dims_tmp.append(dc_list[dc_idx][1] + static_list[i][1])
+                else:
+                    dims_tmp.append(static_list[i][1])
+            else:
+                # środkowy
+                dc_left_idx  = i - 1
+                dc_right_idx = i
+                val = static_list[i][1]
+                if 0 <= dc_left_idx < n_dc:
+                    val += dc_list[dc_left_idx][1]
+                if 0 <= dc_right_idx < n_dc:
+                    val += dc_list[dc_right_idx][1]
+                dims_tmp.append(val)
+        dims = dims_tmp
+
+    # Ewentualnie korekta, jeśli dimension_mode == "Inside"
+    if dimension_mode.lower() == "inside":
+        # Przykład: odejmij grubość 2mm (jeśli tak to zdefiniowano).
+        # Można wczytać realną grubość z pliku .dld i tutaj odjąć. 
+        # Tymczasowo pokazujemy np. -2:
+        dims = [d - 2 for d in dims if d>2]
+
+    return dims
+
+
 def create_summary_for_file(filepath, detail_rows):
     """
-    Tworzy słownik, który odpowiada docelowej tabeli:
-    [Nazwa pliku, Liczba odcinkow, Wymiary zewnetrzne, Wymiary wewnętrzne,
-     Promień wewnętrzny, Długość złamu, Rozwinięcie wyliczeniowe, Rozwinięcie z pliku,
-     Wymiary, Łuki, Typ]
-
-    detail_rows – wszystkie wiersze (z process_file) dla *wszystkich* plików, 
-                  z których wyłuskamy te pasujące do 'filepath'.
+    Tworzy słownik z kolumnami do pliku "wyniki_zw_o1.xlsx", w tym
+    Wymiary zewnetrzne i Wymiary wewnetrzne wyliczone wg reguły
+    skrajne/środkowe (Static + DC).
     """
     fname = os.path.basename(filepath)
-    row_dict = {
+    summary = {
         "Nazwa pliku": fname,
         "Liczba odcinkow": None,
         "Wymiary zewnetrzne": "",
@@ -174,170 +267,161 @@ def create_summary_for_file(filepath, detail_rows):
         "Długość złamu": "",
         "Rozwinięcie wyliczeniowe": "",
         "Rozwinięcie z pliku": "",
-        "Wymiary": "",
-        "Łuki": "",
-        "Typ": ""
+        "Wymiary": "",  # w razie potrzeby
+        "Łuki": "",     # w razie potrzeby
+        "Typ": ""       # Inside/Outside
     }
 
-    # wczytujemy XML
+    # Wczytujemy XML
     try:
         tree = ET.parse(filepath)
         root = tree.getroot()
     except ET.ParseError as e:
         print(f"Błąd parsowania {filepath}: {e}")
-        return row_dict
+        return summary
 
-    # A) Liczba odcinków -> zliczamy <VDeformableComponent> lub <BendStep> w <BendSequence>
+    # 1) Liczba odcinków – np. z BendStep w BendSequence
     bend_seq = root.find(".//BendSequence")
     if bend_seq is not None:
-        bend_steps = bend_seq.findall("BendStep")
-        row_dict["Liczba odcinkow"] = len(bend_steps) if bend_steps else 0
+        bsteps = bend_seq.findall("BendStep")
+        summary["Liczba odcinkow"] = len(bsteps)
     else:
-        # ewentualnie 0 lub brak
-        row_dict["Liczba odcinkow"] = 0
+        summary["Liczba odcinkow"] = 0
 
-    # B) Odczyt "Typ" = Inside / Outside
-    wdim = root.find(".//Workpiece/WorkpieceDimensions")
-    if wdim is not None:
-        row_dict["Typ"] = wdim.attrib.get("value","")
+    # 2) Typ = Inside/Outside
+    dim_elem = root.find(".//Workpiece/WorkpieceDimensions")
+    dimension_mode = dim_elem.attrib.get("value","") if dim_elem is not None else ""
+    summary["Typ"] = dimension_mode
 
-    # C) Promień wewnętrzny (zbieramy ActualInnerRadius)
-    radii = []
-    for vcomp in root.findall(".//VDeformableComponent"):
-        for ar in vcomp.findall("ActualInnerRadius"):
+    # 3) Promień wewnętrzny
+    radii_vals = []
+    for vdef in root.findall(".//VDeformableComponent"):
+        for ar in vdef.findall("ActualInnerRadius"):
             val_str = ar.attrib.get("value","").replace(",",".")
             if val_str:
                 try:
-                    radii.append(float(val_str))
+                    radii_vals.append(float(val_str))
                 except:
                     pass
-    if radii:
-        # np. "8.04273, 6"
-        row_dict["Promień wewnętrzny"] = ", ".join(str(r) for r in radii)
+    if radii_vals:
+        summary["Promień wewnętrzny"] = ", ".join(str(r) for r in radii_vals)
 
-    # D) Długość złamu – z <BendSequence><BendStep><DeformableSystemState><BendLength>
-    bend_length_val = ""
+    # 4) Długość złamu – z pierwszego BendStep->DeformableSystemState->BendLength
+    bend_len_str = ""
     if bend_seq is not None:
         first_bs = bend_seq.find("BendStep")
         if first_bs is not None:
-            ds_state = first_bs.find("DeformableSystemState")
-            if ds_state is not None:
-                bl_elem = ds_state.find("BendLength")
-                if bl_elem is not None:
-                    bend_length_val = bl_elem.attrib.get("value","")
-    row_dict["Długość złamu"] = bend_length_val
+            ds = first_bs.find("DeformableSystemState")
+            if ds is not None:
+                bl = ds.find("BendLength")
+                if bl is not None:
+                    bend_len_str = bl.attrib.get("value","")
+    summary["Długość złamu"] = bend_len_str
 
-    # E) Rozwinięcie z pliku -> <BlankLength>
-    blank_val = ""
+    # 5) Rozwinięcie z pliku – <BlankLength>
+    blank_len_str = ""
     if bend_seq is not None:
-        blank_elem = bend_seq.find("BlankLength")
-        if blank_elem is not None:
-            blank_val = blank_elem.attrib.get("value","")
-    row_dict["Rozwinięcie z pliku"] = blank_val
+        bl_elem = bend_seq.find("BlankLength")
+        if bl_elem is not None:
+            blank_len_str = bl_elem.attrib.get("value","")
+    summary["Rozwinięcie z pliku"] = blank_len_str
 
-    # F) Rozwinięcie wyliczeniowe -> np. sumaryczna wartość z "odcinek nr 2" i source w ["StaticComponentHull", "VDeformableComponentHulls"]
-    #    (to jest przykładowa logika – dostosuj wedle potrzeb).
+    # 6) Rozwinięcie wyliczeniowe – np. sum (odc=2, source in [StaticComponentHull, VDeformableComponentHulls])
     sum_rozwin = 0.0
     for row in detail_rows:
-        # row: [filename, comp, source, odc_nr, x1, y1, x2, y2, is_arc, chord_len, arc_len, skrajny]
-        if row[0] == fname and row[3] == 2 and row[2] in ["StaticComponentHull", "VDeformableComponentHulls"]:
+        if row[0] == fname and row[3] == 2 and (row[2] in ["StaticComponentHull", "VDeformableComponentHulls"]):
             try:
                 sum_rozwin += float(row[10])  # arc_len
             except:
                 pass
-    if sum_rozwin:
-        row_dict["Rozwinięcie wyliczeniowe"] = str(sum_rozwin)
+    summary["Rozwinięcie wyliczeniowe"] = str(sum_rozwin) if sum_rozwin else ""
 
-    # G) Wymiary zewnętrzne / wewnętrzne -> z Twoich danych. 
-    #    W przykładach wpisujesz "70.0,49.96,17.96" lub "3.82189,16.984" itp.
-    #    Możesz to liczyć z sum (skrajne, środkowe) albo przechowywać w pliku. 
-    #    Tu – przykładowo – weźmiemy "odcinek 2, SC + DC" itp. (podobnie jak w poprzednich snippetach).
-    #    Dla uproszczenia: weźmiemy 2 wartości (SC(2) + DC(2)) i wpiszemy do "Wymiary zewnetrzne".
-    #    A do "Wymiary wewnętrzne" – cokolwiek innego. 
-    #    W realnym kodzie wstaw tu logikę obliczania, jak w Twoich wcześniejszych wytycznych.
-    
-    # =============== Przykładowa, minimalna logika: =====================
-    # "Wymiary zewnetrzne" – zsumuj SC(2) + DC(2)
-    sc_vals = []
-    dc_vals = []
+    # 7) Wymiary zewn. i wewn. wg reguły skrajne/środkowe
+    #    Zbieramy segmenty statyczne i DC (ShorteningContour), odc=2
+    #    Sortujemy w kolejności: MainPlane -> SC00 -> SC01 -> ...
+    #    DC w kolejności DC00 -> DC01 -> ...
+    #    Potem compute_dimensions_skrajne_srodkowe.
+    static_list = []
+    dc_list = []
+
+    # Prosta mapka priorytetów, by posortować w logicznej kolejności
+    # (możesz rozbudować zależnie od swoich nazw)
+    priority_static = {
+        "MainPlane": 0,
+        "SC00": 1,
+        "SC01": 2,
+        "SC02": 3
+    }
+    priority_dc = {
+        "DC00": 0,
+        "DC01": 1,
+        "DC02": 2
+    }
+
     for row in detail_rows:
+        # row = [filename, comp, source, odc_nr, ..., arc_len(index=10), skrajny(11)]
         if row[0] == fname and row[3] == 2:
-            source = row[2]
-            arc_len = row[10]
-            if source == "StaticComponentHull":
-                sc_vals.append(arc_len)
-            elif source == "ShorteningContour":
-                dc_vals.append(arc_len)
-    # Tworzymy listę wymiarów z sum SC[i] + DC[i], parując wg indeksu
-    # (w realnym wypadku może być inna zasada parowania)
-    wymiary_zew = []
-    for i in range(min(len(sc_vals), len(dc_vals))):
-        val = sc_vals[i] + dc_vals[i]
-        wymiary_zew.append(round(val,2))
+            comp  = row[1]
+            src   = row[2]
+            a_len = row[10]
+            if src == "StaticComponentHull":
+                prio = priority_static.get(comp, 99)
+                static_list.append((prio, comp, a_len))
+            elif src == "ShorteningContour" and comp.startswith("DC"):
+                prio = priority_dc.get(comp, 99)
+                dc_list.append((prio, comp, a_len))
 
-    row_dict["Wymiary zewnetrzne"] = ",".join(str(x) for x in wymiary_zew)
+    # Sortujemy wg prio
+    static_list.sort(key=lambda x: x[0])
+    dc_list.sort(key=lambda x: x[0])
 
-    # "Wymiary wewnętrzne" – tu np. oblicz jak w pytaniu (minus grubość, itp.)
-    # Na potrzeby przykładu wstawimy 2 przykładowe wartości
-    # Lepiej wstawić realne obliczenia. 
-    # Poniżej – jeżeli Twój <WorkpieceDimensions value="Inside"> – wypełniamy,
-    # a jeżeli "Outside" – puste, i odwrotnie.
-    if row_dict["Typ"].lower() == "inside":
-        # wstawmy np. Wymiary wewnętrzne = [ val-3 for val in wymiary_zew ]
-        # (w praktyce: zależnie od realnego sposobu)
-        inner_list = [round(x-3,3) for x in wymiary_zew if x>3]
-        row_dict["Wymiary wewnętrzne"] = ",".join(str(x) for x in inner_list)
+    # Budujemy listy (comp, arc_len) -> arc_len
+    st_list = [(it[1], it[2]) for it in static_list]  # (comp, val)
+    dc_l    = [(it[1], it[2]) for it in dc_list]
+
+    dims_outside = compute_dimensions_skrajne_srodkowe(st_list, dc_l, dimension_mode="Outside")
+    dims_inside  = compute_dimensions_skrajne_srodkowe(st_list, dc_l, dimension_mode="Inside")
+
+    # Jeżeli plik ma typ Outside, to "Wymiary zewnetrzne" = dims_outside, "Wymiary wewnętrzne" = pusto
+    # Jeżeli plik ma typ Inside, to "Wymiary wewnętrzne" = dims_inside, "Wymiary zewnetrzne" = pusto
+    if dimension_mode.lower() == "outside":
+        summary["Wymiary zewnetrzne"] = ", ".join(str(round(x,5)) for x in dims_outside)
+        summary["Wymiary wewnętrzne"] = ""
     else:
-        # wstawmy pusto lub cokolwiek
-        row_dict["Wymiary wewnętrzne"] = ""
+        summary["Wymiary zewnetrzne"] = ""
+        summary["Wymiary wewnętrzne"] = ", ".join(str(round(x,5)) for x in dims_inside)
 
-    # H) "Wymiary" – w Twoim przykładzie często wpisujesz tam sumy z SC(2) i ewentualnie bez DC. 
-    #    Możesz też wstawić "SC(2), SC(2), SC(2)" – zależnie od definicji. 
-    #    Tutaj pokażemy przykład:
-    #    Zbieramy same SC(2) i zrobimy listę. 
-    sc_only = [round(x,2) for x in sc_vals]
-    row_dict["Wymiary"] = ",".join(str(x) for x in sc_only)
-
-    # I) "Łuki" – np. z VDeformableComponentHulls, odcinek nr 1
-    #    Zbierzmy je do listy i wpiszmy. 
-    arcs_list = []
-    for row in detail_rows:
-        if row[0] == fname and row[2] == "VDeformableComponentHulls" and row[3] == 1:
-            # row[10] – arc_length
-            arcs_list.append(round(row[10],1))
-    row_dict["Łuki"] = ",".join(str(x) for x in arcs_list)
-
-    return row_dict
+    return summary
 
 
 def main():
     dld_files = glob.glob("*.dld")
     if not dld_files:
-        print("Brak plików *.dld w folderze.")
+        print("Brak plików .dld w folderze.")
         return
 
+    # 1) Zbieramy dane szczegółowe ze wszystkich plików
     all_details = []
-    # 1) Najpierw zbieramy wszystkie wiersze szczegółowe z process_file
     for fp in dld_files:
-        detail = process_file(fp)
-        all_details.extend(detail)
+        rows = process_file(fp)
+        all_details.extend(rows)
 
-    # Zapis szczegółowy:
-    cols_details = [
-        "Nazwa pliku", "Komponent", "Źródło outline", "Odcinek nr",
-        "X1", "Y1", "X2", "Y2", "Łuk?", "Długość cięciwy", "Długość łuku", "Skrajny"
+    # Zapis do wyniki_odcinki_o1.xlsx (szczegóły)
+    cols = [
+      "Nazwa pliku", "Komponent", "Źródło outline", "Odcinek nr",
+      "X1", "Y1", "X2", "Y2", "Łuk?", "Długość cięciwy", "Długość łuku", "Skrajny?"
     ]
-    df_d = pd.DataFrame(all_details, columns=cols_details)
-    df_d.to_excel("wyniki_odcinki_o1.xlsx", index=False)
-    print("Zapisano plik 'wyniki_odcinki_o1.xlsx'.")
+    df_detail = pd.DataFrame(all_details, columns=cols)
+    df_detail.to_excel("wyniki_odcinki_o1.xlsx", index=False)
+    print("Utworzono plik 'wyniki_odcinki_o1.xlsx'.")
 
-    # 2) Teraz tworzymy wiersze podsumowania
+    # 2) Tworzymy podsumowanie
     all_summaries = []
     for fp in dld_files:
-        row_sum = create_summary_for_file(fp, all_details)
-        all_summaries.append(row_sum)
+        summary_row = create_summary_for_file(fp, all_details)
+        all_summaries.append(summary_row)
 
-    # Ustalamy finalną kolejność kolumn w exactly the same order:
+    # Ustalamy kolejność kolumn w wynikach końcowych
     final_cols = [
         "Nazwa pliku",
         "Liczba odcinkow",
@@ -347,13 +431,14 @@ def main():
         "Długość złamu",
         "Rozwinięcie wyliczeniowe",
         "Rozwinięcie z pliku",
-        "Wymiary",
-        "Łuki",
+        "Wymiary",  # ewentualnie jeśli chcesz wypełniać
+        "Łuki",     # ewentualnie
         "Typ"
     ]
     df_summ = pd.DataFrame(all_summaries, columns=final_cols)
     df_summ.to_excel("wyniki_zw_o1.xlsx", index=False)
-    print("Zapisano plik 'wyniki_zw_o1.xlsx'.")
+    print("Utworzono plik 'wyniki_zw_o1.xlsx' z podsumowaniem.")
+
 
 if __name__ == "__main__":
     main()
