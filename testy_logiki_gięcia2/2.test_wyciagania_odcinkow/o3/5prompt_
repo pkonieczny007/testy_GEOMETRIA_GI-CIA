@@ -1,0 +1,856 @@
+W pliku dld (xml)
+
+jest zależność. 
+
+
+<WorkpieceComponentName unit="Text" value="MainPlane"/>
+czyli StaticComponentHull
+ma skrócenie
+<DeformableComponentName unit="Text" value="DC00"/>
+<DeformableComponentName unit="Text" value="DC01"/>
+
+następnie 
+<WorkpieceComponentName unit="Text" value="SC00"/>
+ma skrócenie
+<DeformableComponentName unit="Text" value="DC00"/>
+
+<WorkpieceComponentName unit="Text" value="SC01"/>
+ma skrócenie
+<DeformableComponentName unit="Text" value="DC01"/>
+<DeformableComponentName unit="Text" value="DC02"/>
+
+<WorkpieceComponentName unit="Text" value="SC02"/>
+ma skrócenie
+<DeformableComponentName unit="Text" value="DC02"/>
+
+przeanalizuj skrypt, i wyniku dawaj ilosc duplikatów.
+
+nastepnie wymiar wewnetrzny/zewnetrzny wiliczaj dodajac odpowiednio 
+WorkpieceComponentName + DeformableComponentName
+
+<?xml version="1.0" encoding="UTF-8"?>
+<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:delem="http://www.delem.com/delem" version="1.0">
+<delem:data>
+<Workpiece>
+<Version unit="Text" value="1.1"/>
+<WorkpieceName unit="Text" value="40051380"/>
+<WorkpieceDescription unit="Text" value=""/>
+<Note unit="Text" value=""/>
+<WorkpieceThickness unit="MilliMeter" value="2"/>
+<WorkpieceThicknessCorrection unit="MilliMeter" value="0"/>
+<WriteProtected unit="Boolean" value="false"/>
+<WorkpieceDimensions unit="Enumeration" value="Inside"/>
+<DrawingType unit="Enumeration" value="2D"/>
+<DrawingSubType unit="Enumeration" value=""/>
+<CreationDate unit="DateTime" value="2024-02-15 06:41:04"/>
+<ModificationDate unit="DateTime" value="2024-02-15 10:02:55"/>
+<RadiusProgrammingStyle unit="Enumeration" value="UseCalculated"/>
+<BendAllowanceProgrammingStyle unit="Enumeration" value="UseCalculated"/>
+<VersionCreated unit="Text" value=""/>
+<VersionLastEdit unit="Text" value="3.8.16"/>
+<FoilStatus unit="Enumeration" value="None"/>
+<BendLabelsVisible unit="Boolean" value="false"/>
+<WorkpieceMaterial>
+<MaterialName unit="Text" value="Stal czarna"/>
+<MaterialNumber unit="Text" value="1"/>
+<TensileStrength unit="KiloNewtonPerSquareMm" value="470"/>
+<EModulus unit="KiloNewtonPerSquareMm" value="210000"/>
+<StrainHardeningExponent unit="RealNumber" value="0.23"/>
+</WorkpieceMaterial>
+<WorkpieceMap>
+<MainPlaneName unit="Text" value="MainPlane"/>
+<MainPlaneSideRef unit="DirectionVector" value="1 0 0"/>
+<MainPlaneTransformation unit="Position" value="0 0 0 0 0 1 0"/>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="MainPlane"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 1710 196.659469 0 196.659469 false 0 196.659469 0 2.773604 false 0 2.773604 1710 2.773604 false 1710 2.773604 1710 196.659469 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 1710 2.773604 0 2.773604 false 0 2.773604 0 0 false 0 0 1710 0 false 1710 0 1710 2.773604 false"/>
+</DeformableCompShortening>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC01"/>
+<ShorteningContour unit="Outline" value="4 0 196.659469 1710 196.659469 false 1710 196.659469 1710 200 false 1710 200 0 200 false 0 200 0 196.659469 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC00"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 2.773604 1710 2.773604 0 false 2.773604 0 18 0 false 18 0 18 1710 false 18 1710 2.773604 1710 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC00"/>
+<ShorteningContour unit="Outline" value="4 2.773604 0 2.773604 1710 false 2.773604 1710 0 1710 false 0 1710 0 0 false 0 0 2.773604 0 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC01"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 27.226396 0 27.226396 1710 false 27.226396 1710 -17.659473 1710 false -17.659473 1710 -17.659473 0 false -17.659473 0 27.226396 0 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC01"/>
+<ShorteningContour unit="Outline" value="4 -17.659473 0 -17.659473 1710 false -17.659473 1710 -21.000004 1710 false -21.000004 1710 -21.000004 0 false -21.000004 0 -17.659473 0 false"/>
+</DeformableCompShortening>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC02"/>
+<ShorteningContour unit="Outline" value="4 27.226396 1710 27.226396 0 false 27.226396 0 30 0 false 30 0 30 1710 false 30 1710 27.226396 1710 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<StaticComponent>
+<WorkpieceComponentName unit="Text" value="SC02"/>
+<StaticComponentPart>
+<StaticComponentHull unit="Outline" value="4 10.773604 1710 10.773604 0 false 10.773604 0 26 0 false 26 0 26 1710 false 26 1710 10.773604 1710 false"/>
+</StaticComponentPart>
+<DeformableCompShortening>
+<DeformableComponentName unit="Text" value="DC02"/>
+<ShorteningContour unit="Outline" value="4 10.773604 0 10.773604 1710 false 10.773604 1710 8 1710 false 8 1710 8 0 false 8 0 10.773604 0 false"/>
+</DeformableCompShortening>
+</StaticComponent>
+<VDeformableComponent>
+<WorkpieceComponentName unit="Text" value="DC00"/>
+<VDeformableComponentBendLine unit="Lines" value="1 Line 2.963782 0 2.963782 1710 false"/>
+<VDeformableComponentAngle unit="Degrees" value="90"/>
+<PreferredInnerRadius unit="MilliMeter" value="2.81648"/>
+<ActualInnerRadius unit="MilliMeter" value="2.7736"/>
+<VDeformableComponentHulls unit="Outlines" value="1 Outline 4 0 0 5.927563 0 false 5.927563 0 5.927563 1710 false 5.927563 1710 0 1710 false 0 1710 0 0 false"/>
+<BendZoneCreationOrigin unit="Enumeration" value="delem_editor"/>
+<LeftStaticComponent>
+<StaticComponentName unit="Text" value="MainPlane"/>
+<SideReference unit="Line" value="0 2.773604 1710 2.773604 false"/>
+</LeftStaticComponent>
+<RightStaticComponent>
+<StaticComponentName unit="Text" value="SC00"/>
+<SideReference unit="Line" value="2.773604 1710 2.773604 0 false"/>
+</RightStaticComponent>
+<VBendDeformation>
+<DeformationName unit="Text" value="Def00DC00"/>
+<AngleAfter unit="Degrees" value="90"/>
+<AngleBefore unit="Degrees" value="180"/>
+<BendAllowance unit="MilliMeter" value="0"/>
+</VBendDeformation>
+</VDeformableComponent>
+<VDeformableComponent>
+<WorkpieceComponentName unit="Text" value="DC01"/>
+<VDeformableComponentBendLine unit="Lines" value="1 Line 3.52566 0 3.52566 1710 false"/>
+<VDeformableComponentAngle unit="Degrees" value="210"/>
+<PreferredInnerRadius unit="MilliMeter" value="12.34053"/>
+<ActualInnerRadius unit="MilliMeter" value="12.46703"/>
+<VDeformableComponentHulls unit="Outlines" value="1 Outline 4 0 0 7.051321 0 false 7.051321 0 7.051321 1710 false 7.051321 1710 0 1710 false 0 1710 0 0 false"/>
+<BendZoneCreationOrigin unit="Enumeration" value="delem_editor"/>
+<LeftStaticComponent>
+<StaticComponentName unit="Text" value="MainPlane"/>
+<SideReference unit="Line" value="1710 196.659469 0 196.659469 false"/>
+</LeftStaticComponent>
+<RightStaticComponent>
+<StaticComponentName unit="Text" value="SC01"/>
+<SideReference unit="Line" value="-17.659473 1710 -17.659473 0 false"/>
+</RightStaticComponent>
+<VBendDeformation>
+<DeformationName unit="Text" value="Def00DC01"/>
+<AngleAfter unit="Degrees" value="210"/>
+<AngleBefore unit="Degrees" value="180"/>
+<BendAllowance unit="MilliMeter" value="0"/>
+</VBendDeformation>
+</VDeformableComponent>
+<VDeformableComponent>
+<WorkpieceComponentName unit="Text" value="DC02"/>
+<VDeformableComponentBendLine unit="Lines" value="1 Line 2.963782 0 2.963782 1710 false"/>
+<VDeformableComponentAngle unit="Degrees" value="90"/>
+<PreferredInnerRadius unit="MilliMeter" value="2.81648"/>
+<ActualInnerRadius unit="MilliMeter" value="2.7736"/>
+<VDeformableComponentHulls unit="Outlines" value="1 Outline 4 0 0 5.927563 0 false 5.927563 0 5.927563 1710 false 5.927563 1710 0 1710 false 0 1710 0 0 false"/>
+<BendZoneCreationOrigin unit="Enumeration" value="delem_editor"/>
+<LeftStaticComponent>
+<StaticComponentName unit="Text" value="SC01"/>
+<SideReference unit="Line" value="27.226396 0 27.226396 1710 false"/>
+</LeftStaticComponent>
+<RightStaticComponent>
+<StaticComponentName unit="Text" value="SC02"/>
+<SideReference unit="Line" value="10.773604 1710 10.773604 0 false"/>
+</RightStaticComponent>
+<VBendDeformation>
+<DeformationName unit="Text" value="Def00DC02"/>
+<AngleAfter unit="Degrees" value="90"/>
+<AngleBefore unit="Degrees" value="180"/>
+<BendAllowance unit="MilliMeter" value="0"/>
+</VBendDeformation>
+</VDeformableComponent>
+</WorkpieceMap>
+<WorkPieceMarker>
+<StaticComponentName unit="Text" value=""/>
+<WorkPieceMarkerPosition unit="Position" value="0 0 0 0 0 1 0"/>
+<WorkPieceMarkerFlipped unit="Boolean" value="false"/>
+</WorkPieceMarker>
+<signature>a4471f7d247cfc7af2f63df54e14d13adb96f039a64712079e9b08c0e2f3bd1d</signature>
+</Workpiece>
+<BendSequence>
+<Version unit="Text" value="1.1"/>
+<Originator unit="Text" value="1"/>
+<MachineName unit="Text" value="1"/>
+<WorkpieceName unit="Text" value="40051380"/>
+<SupportsMultipleToolStations unit="Enumeration" value="Yes"/>
+<BlankLength unit="MilliMeter" value="288.13096"/>
+<ConnectedProgram unit="Text" value=""/>
+<ProgrammingStyle unit="Enumeration" value="Angle"/>
+<BendStepVisibility unit="Enumeration" value="All"/>
+<ViewDimension unit="Enumeration" value="2D"/>
+<PhotoViewEnabled unit="Enumeration" value="No"/>
+<StepMode unit="Enumeration" value="Disabled"/>
+<VersionCreated unit="Text" value=""/>
+<VersionLastEdit unit="Text" value="3.8.16"/>
+<BendSequenceOriginator unit="Enumeration" value="Workpiece"/>
+<BendSequenceType unit="Enumeration" value="Unbend"/>
+<ProductionTime unit="Seconds" value="28.829473"/>
+<GeneralCorrection>
+<AngleCorrection unit="Degrees" value="0"/>
+<UIGeneralAngleCorrection unit="Degrees" value="0"/>
+<UIGeneralAngle2Correction unit="Degrees" value="0"/>
+<SensorCorrection unit="Degrees" value="1"/>
+<PartSupportCorrection unit="Degrees" value="0"/>
+<GeneralXCorrection unit="MilliMeter" value="0"/>
+<GeneralX2Correction unit="MilliMeter" value="0"/>
+<GeneralPSTCorrectionFactor unit="RealNumber" value="1"/>
+<GeneralCrowningCorrection unit="RealNumber" value="0"/>
+</GeneralCorrection>
+<BendSequenceSensorData>
+<CompensationFactor unit="RealNumber" value="0"/>
+<EstimatedSpringBack unit="RealNumber" value="0"/>
+<VerifyInterval unit="RealNumber" value="0"/>
+</BendSequenceSensorData>
+<BendingPreferences>
+<Assignments>
+<BackStopDieIntermediateBend unit="Enumeration" value="WhenNecessary"/>
+<BackStopSharpAngleAllowed unit="Enumeration" value="Allowed"/>
+<EdgeTolerance unit="Degrees" value="3"/>
+<FrontExtendRatio unit="RealNumber" value="0.3"/>
+<FrontExtendRatioAccept unit="Enumeration" value="IfPossible"/>
+<LayOnBackstopLimit unit="MilliMeter" value="150"/>
+<MinFingerWpOverlap unit="MilliMeter" value="5"/>
+<MinYOpening unit="MilliMeter" value="10"/>
+<MinUnfoldedProductDimensionForLargerYOpening unit="MilliMeter" value="1000"/>
+<MinProductThicknessForLargerYOpening unit="MilliMeter" value="5"/>
+<OptimisationDegree unit="NaturalNumber" value="2"/>
+<PunchLengthTolerance unit="MilliMeter" value="-6"/>
+<RadiusFactor unit="RealNumber" value="1"/>
+<Tolerance90Degree unit="Degrees" value="3"/>
+<RetractOptimization unit="Enumeration" value="NotEnabled"/>
+<ProductProductCollisionCheck unit="Enumeration" value="Warnings"/>
+</Assignments>
+</BendingPreferences>
+<GaugeConfiguration>
+<OrthogonalGauge>
+<GaugeName unit="Text" value="Finger 0"/>
+<GaugeFingerReference unit="Text" value="Finger 0"/>
+<MachineMotionOrigin unit="Text" value="ZDummy1"/>
+</OrthogonalGauge>
+<OrthogonalGauge>
+<GaugeName unit="Text" value="Finger 1"/>
+<GaugeFingerReference unit="Text" value="Finger 1"/>
+<MachineMotionOrigin unit="Text" value="ZDummy2"/>
+</OrthogonalGauge>
+<OrthogonalGaugePart>
+<GaugePartName unit="Text" value="X"/>
+<AxisName unit="Text" value="X"/>
+<MachineMotionOrigin unit="Text" value="GaugeSystem"/>
+</OrthogonalGaugePart>
+<OrthogonalGaugePart>
+<GaugePartName unit="Text" value="R"/>
+<AxisName unit="Text" value="R"/>
+<MachineMotionOrigin unit="Text" value="X"/>
+</OrthogonalGaugePart>
+<OrthogonalGaugePart>
+<GaugePartName unit="Text" value="ZDummy1"/>
+<AxisName unit="Text" value="ZDummy1"/>
+<MachineMotionOrigin unit="Text" value="R"/>
+</OrthogonalGaugePart>
+<OrthogonalGaugePart>
+<GaugePartName unit="Text" value="ZDummy2"/>
+<AxisName unit="Text" value="ZDummy2"/>
+<MachineMotionOrigin unit="Text" value="R"/>
+</OrthogonalGaugePart>
+</GaugeConfiguration>
+<ToolConfiguration>
+<ToolGroup>
+<ToolConnectionRailReference>
+<ToolConnectionRailName unit="Text" value="lower"/>
+</ToolConnectionRailReference>
+<ToolTree>
+<ToolPosition unit="MilliMeter" value="1170"/>
+<ToolSwapped unit="Enumeration" value="Disabled"/>
+<ToolHolderReference>
+<ToolHolderName unit="Text" value="lower"/>
+</ToolHolderReference>
+<ToolReference>
+<ToolName unit="Text" value="M4-V16"/>
+<ToolType unit="Enumeration" value="Die"/>
+<ToolWidth unit="MilliMeter" value="1710"/>
+<ToolHeelType unit="Enumeration" value="None"/>
+</ToolReference>
+</ToolTree>
+</ToolGroup>
+<ToolGroup>
+<ToolConnectionRailReference>
+<ToolConnectionRailName unit="Text" value="upper"/>
+</ToolConnectionRailReference>
+<ToolTree>
+<ToolPosition unit="MilliMeter" value="1170"/>
+<ToolSwapped unit="Enumeration" value="Disabled"/>
+<ToolHolderReference>
+<ToolHolderName unit="Text" value="upper"/>
+</ToolHolderReference>
+<ToolReference>
+<ToolName unit="Text" value="S2010"/>
+<ToolType unit="Enumeration" value="Punch"/>
+<ToolWidth unit="MilliMeter" value="1710"/>
+<ToolHeelType unit="Enumeration" value="None"/>
+</ToolReference>
+</ToolTree>
+</ToolGroup>
+<Assignments>
+<MaxInterSegmentDistance unit="MilliMeter" value="0"/>
+<UseToolLengthTolerance unit="Boolean" value="false"/>
+</Assignments>
+</ToolConfiguration>
+<BendStep>
+<RepeatCount unit="NaturalNumber" value="1"/>
+<BendHemOpening unit="MilliMeter" value="0"/>
+<FastHemming unit="Enumeration" value="No"/>
+<CorrespondWithDrawing unit="Enumeration" value="Yes"/>
+<Deformation unit="Text" value="Def00DC02"/>
+<ConfirmationBendAccuracyLevel unit="Enumeration" value="Low"/>
+<Note unit="Text" value=""/>
+<WorkpiecePosition>
+<StaticComponentName unit="Text" value="SC01"/>
+<ZPosition unit="MilliMeter" value="1170"/>
+</WorkpiecePosition>
+<SensorBendStepData>
+<SubBendMethod unit="RealNumber" value="0"/>
+<AngleCorrection unit="Degrees" value="0"/>
+<Angle2Correction unit="Degrees" value="0"/>
+<SensorReference1 unit="NaturalNumber" value="0"/>
+<SensorReference2 unit="NaturalNumber" value="0"/>
+<CrowningReference unit="NaturalNumber" value="0"/>
+<SensorBendReference unit="NaturalNumber" value="1"/>
+<BendMode unit="RealNumber" value="0"/>
+<VerifyInterval unit="RealNumber" value="0"/>
+</SensorBendStepData>
+<DeformableSystemState>
+<BendAngle unit="Degrees" value="90"/>
+<BendDepth unit="MilliMeter" value="5.149257"/>
+<BendDepthMean unit="MilliMeter" value="5.069321"/>
+<BendDepthRight unit="MilliMeter" value="4.989385"/>
+<BendLength unit="MilliMeter" value="1710"/>
+<EffectiveBendLength unit="MilliMeter" value="1710"/>
+<BendMethod unit="Enumeration" value="AirBend"/>
+<ServoCrowningMethod unit="Enumeration" value="Dynamic"/>
+<DeformingForce unit="KiloNewton" value="327.698004"/>
+<HoldTime unit="Seconds" value="0.1"/>
+<CrowningAxis>
+<AxisName unit="Text" value="CROWN"/>
+<LinearAxisPosition unit="MilliMeter" value="15"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+</CrowningAxis>
+<YAxis>
+<AxisName unit="Text" value="Y"/>
+<LinearAxisPosition unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<DecompressionDistance unit="MilliMeter" value="0.09831"/>
+<DecompressionSpeed unit="MilliMeterPerSecond" value="10"/>
+<DecompressionComputationMethod unit="Enumeration" value="Computed"/>
+<Mute unit="MilliMeter" value="14"/>
+<MutePosition unit="MilliMeter" value="382.99991"/>
+<YOpening unit="MilliMeter" value="20.001"/>
+<Parallelism unit="MilliMeter" value="0"/>
+<PressingSpeed unit="MilliMeterPerSecond" value="10"/>
+<ApproachSpeed unit="MilliMeterPerSecond" value="5"/>
+<YAxisCorrectionLeft unit="Degrees" value="-9.5"/>
+<YAxisCorrectionRight unit="Degrees" value="-8"/>
+<YAxisUserCorrectionLeft unit="Degrees" value="-9.5"/>
+<YAxisUserCorrectionRight unit="Degrees" value="-8"/>
+</YAxis>
+</DeformableSystemState>
+<GaugeSystemState>
+<DelayTime unit="Seconds" value="0"/>
+<GaugeCode unit="Enumeration" value="UpperDeadPoint"/>
+<WaitForRetract unit="Enumeration" value="No"/>
+<RAxis>
+<AxisName unit="Text" value="R"/>
+<LinearAxisPosition unit="MilliMeter" value="60.00105"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<RelativeAxisPosition unit="MilliMeter" value="0.00095"/>
+</RAxis>
+<XAxis>
+<AxisName unit="Text" value="X"/>
+<LinearAxisPosition unit="MilliMeter" value="18.19018"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<Positioning unit="Enumeration" value="Absolute"/>
+</XAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy1"/>
+<LinearAxisPosition unit="MilliMeter" value="1215.99995"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy2"/>
+<LinearAxisPosition unit="MilliMeter" value="2834.00005"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<GaugeStopContact>
+<WorkpieceContact>
+<StaticComponentSideContact>
+<SideContactFraction unit="RealNumber" value="0.026901"/>
+<SideReference unit="Line" value="26 0 26 1710 false"/>
+<SideRelativeContactPoint unit="Position" value="0 1618.00005 1.999 0 0 1 0"/>
+<StaticComponentName unit="Text" value="SC02"/>
+</StaticComponentSideContact>
+</WorkpieceContact>
+<GaugeFingerContact>
+<GaugeFingerContactPoint unit="Position" value="46 1.99805 0 0 0 1 0"/>
+<GaugeFingerReference unit="Text" value="Finger 0"/>
+<GaugeSurfaceFeatureContact>
+<GaugeSurfaceFeatureContactPoint unit="Position" value="46 1.99805 0 0 0 1 0"/>
+<GaugeContactFeatureReference unit="Text" value="0"/>
+</GaugeSurfaceFeatureContact>
+</GaugeFingerContact>
+</GaugeStopContact>
+<GaugeStopContact>
+<WorkpieceContact>
+<StaticComponentSideContact>
+<SideContactFraction unit="RealNumber" value="0.973099"/>
+<SideReference unit="Line" value="26 0 26 1710 false"/>
+<SideRelativeContactPoint unit="Position" value="0 91.99995 1.999 0 0 1 0"/>
+<StaticComponentName unit="Text" value="SC02"/>
+</StaticComponentSideContact>
+</WorkpieceContact>
+<GaugeFingerContact>
+<GaugeFingerContactPoint unit="Position" value="-46 1.99805 0 0 0 1 0"/>
+<GaugeFingerReference unit="Text" value="Finger 1"/>
+<GaugeSurfaceFeatureContact>
+<GaugeSurfaceFeatureContactPoint unit="Position" value="-46 1.99805 0 0 0 1 0"/>
+<GaugeContactFeatureReference unit="Text" value="0"/>
+</GaugeSurfaceFeatureContact>
+</GaugeFingerContact>
+</GaugeStopContact>
+</GaugeSystemState>
+<GeneralPurposeState>
+<RAxis>
+<AxisName unit="Text" value="R"/>
+<LinearAxisPosition unit="MilliMeter" value="60.00105"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<RelativeAxisPosition unit="MilliMeter" value="0.00095"/>
+</RAxis>
+<XAxis>
+<AxisName unit="Text" value="X"/>
+<LinearAxisPosition unit="MilliMeter" value="18.19018"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<Positioning unit="Enumeration" value="Absolute"/>
+</XAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy1"/>
+<LinearAxisPosition unit="MilliMeter" value="1215.99995"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy2"/>
+<LinearAxisPosition unit="MilliMeter" value="2834.00005"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+</GeneralPurposeState>
+<ToolSetupState>
+<IAxis>
+<AxisName unit="Text" value="I"/>
+<LinearAxisPosition unit="MilliMeter" value="0"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</IAxis>
+</ToolSetupState>
+<BendStepViewState>
+<ViewDimension unit="Enumeration" value="None"/>
+<BendStepVisibility unit="Enumeration" value="All"/>
+<CameraState>
+<CameraPosition unit="Point" value="0 0 0"/>
+<FocusPoint unit="Point" value="0 0 0"/>
+</CameraState>
+</BendStepViewState>
+</BendStep>
+<BendStep>
+<RepeatCount unit="NaturalNumber" value="1"/>
+<BendHemOpening unit="MilliMeter" value="0"/>
+<FastHemming unit="Enumeration" value="No"/>
+<CorrespondWithDrawing unit="Enumeration" value="Yes"/>
+<Deformation unit="Text" value="Def00DC01"/>
+<ConfirmationBendAccuracyLevel unit="Enumeration" value="Low"/>
+<Note unit="Text" value=""/>
+<WorkpiecePosition>
+<StaticComponentName unit="Text" value="MainPlane"/>
+<ZPosition unit="MilliMeter" value="1170"/>
+</WorkpiecePosition>
+<SensorBendStepData>
+<SubBendMethod unit="RealNumber" value="0"/>
+<AngleCorrection unit="Degrees" value="0"/>
+<Angle2Correction unit="Degrees" value="0"/>
+<SensorReference1 unit="NaturalNumber" value="0"/>
+<SensorReference2 unit="NaturalNumber" value="0"/>
+<CrowningReference unit="NaturalNumber" value="0"/>
+<SensorBendReference unit="NaturalNumber" value="1"/>
+<BendMode unit="RealNumber" value="0"/>
+<VerifyInterval unit="RealNumber" value="0"/>
+</SensorBendStepData>
+<DeformableSystemState>
+<BendAngle unit="Degrees" value="150"/>
+<BendDepth unit="MilliMeter" value="0.190114"/>
+<BendDepthMean unit="MilliMeter" value="0.190114"/>
+<BendDepthRight unit="MilliMeter" value="0.190114"/>
+<BendLength unit="MilliMeter" value="1710"/>
+<EffectiveBendLength unit="MilliMeter" value="1710"/>
+<BendMethod unit="Enumeration" value="AirBend"/>
+<ServoCrowningMethod unit="Enumeration" value="Dynamic"/>
+<DeformingForce unit="KiloNewton" value="327.698004"/>
+<HoldTime unit="Seconds" value="0.1"/>
+<CrowningAxis>
+<AxisName unit="Text" value="CROWN"/>
+<LinearAxisPosition unit="MilliMeter" value="15"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+</CrowningAxis>
+<YAxis>
+<AxisName unit="Text" value="Y"/>
+<LinearAxisPosition unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<DecompressionDistance unit="MilliMeter" value="0.09831"/>
+<DecompressionSpeed unit="MilliMeterPerSecond" value="10"/>
+<DecompressionComputationMethod unit="Enumeration" value="Computed"/>
+<Mute unit="MilliMeter" value="14"/>
+<MutePosition unit="MilliMeter" value="382.99991"/>
+<YOpening unit="MilliMeter" value="20.85326"/>
+<Parallelism unit="MilliMeter" value="0"/>
+<PressingSpeed unit="MilliMeterPerSecond" value="10"/>
+<ApproachSpeed unit="MilliMeterPerSecond" value="5"/>
+<YAxisCorrectionLeft unit="Degrees" value="-5"/>
+<YAxisCorrectionRight unit="Degrees" value="-5"/>
+<YAxisUserCorrectionLeft unit="Degrees" value="-5"/>
+<YAxisUserCorrectionRight unit="Degrees" value="-5"/>
+</YAxis>
+</DeformableSystemState>
+<GaugeSystemState>
+<DelayTime unit="Seconds" value="0"/>
+<GaugeCode unit="Enumeration" value="UpperDeadPoint"/>
+<WaitForRetract unit="Enumeration" value="No"/>
+<RAxis>
+<AxisName unit="Text" value="R"/>
+<LinearAxisPosition unit="MilliMeter" value="51.99915"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<RelativeAxisPosition unit="MilliMeter" value="-8.00095"/>
+</RAxis>
+<XAxis>
+<AxisName unit="Text" value="X"/>
+<LinearAxisPosition unit="MilliMeter" value="53.18413"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="8.11721"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<Positioning unit="Enumeration" value="Absolute"/>
+</XAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy1"/>
+<LinearAxisPosition unit="MilliMeter" value="1215.99995"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy2"/>
+<LinearAxisPosition unit="MilliMeter" value="2834.00005"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<GaugeStopContact>
+<WorkpieceContact>
+<StaticComponentSurfaceContact>
+<StaticComponentRelativeContactPoint unit="Position" value="10.7736 91.99995 0.001 0 0 1 0"/>
+<StaticComponentName unit="Text" value="SC02"/>
+</StaticComponentSurfaceContact>
+</WorkpieceContact>
+<GaugeFingerContact>
+<GaugeFingerContactPoint unit="Position" value="46 5.22735 0 0 0 1 0"/>
+<GaugeFingerReference unit="Text" value="Finger 0"/>
+<GaugeSurfaceFeatureContact>
+<GaugeSurfaceFeatureContactPoint unit="Position" value="46 5.22735 0 0 0 1 0"/>
+<GaugeContactFeatureReference unit="Text" value="0"/>
+</GaugeSurfaceFeatureContact>
+</GaugeFingerContact>
+</GaugeStopContact>
+<GaugeStopContact>
+<WorkpieceContact>
+<StaticComponentSurfaceContact>
+<StaticComponentRelativeContactPoint unit="Position" value="16.00095 1710 0.001 0 0 1 0"/>
+<StaticComponentName unit="Text" value="SC02"/>
+</StaticComponentSurfaceContact>
+</WorkpieceContact>
+<GaugeFingerContact>
+<GaugeFingerContactPoint unit="Position" value="45.99995 0 0 0 0 1 0"/>
+<GaugeFingerReference unit="Text" value="Finger 1"/>
+<GaugeSurfaceFeatureContact>
+<GaugeSurfaceFeatureContactPoint unit="Position" value="45.99995 0 0 0 0 1 0"/>
+<GaugeContactFeatureReference unit="Text" value="0"/>
+</GaugeSurfaceFeatureContact>
+</GaugeFingerContact>
+</GaugeStopContact>
+</GaugeSystemState>
+<GeneralPurposeState>
+<RAxis>
+<AxisName unit="Text" value="R"/>
+<LinearAxisPosition unit="MilliMeter" value="51.99915"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<RelativeAxisPosition unit="MilliMeter" value="-8.00095"/>
+</RAxis>
+<XAxis>
+<AxisName unit="Text" value="X"/>
+<LinearAxisPosition unit="MilliMeter" value="53.18413"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="8.11721"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<Positioning unit="Enumeration" value="Absolute"/>
+</XAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy1"/>
+<LinearAxisPosition unit="MilliMeter" value="1215.99995"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy2"/>
+<LinearAxisPosition unit="MilliMeter" value="2834.00005"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+</GeneralPurposeState>
+<ToolSetupState>
+<IAxis>
+<AxisName unit="Text" value="I"/>
+<LinearAxisPosition unit="MilliMeter" value="0"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</IAxis>
+</ToolSetupState>
+<BendStepViewState>
+<ViewDimension unit="Enumeration" value="None"/>
+<BendStepVisibility unit="Enumeration" value="All"/>
+<CameraState>
+<CameraPosition unit="Point" value="0 0 0"/>
+<FocusPoint unit="Point" value="0 0 0"/>
+</CameraState>
+</BendStepViewState>
+</BendStep>
+<BendStep>
+<RepeatCount unit="NaturalNumber" value="1"/>
+<BendHemOpening unit="MilliMeter" value="0"/>
+<FastHemming unit="Enumeration" value="No"/>
+<CorrespondWithDrawing unit="Enumeration" value="Yes"/>
+<Deformation unit="Text" value="Def00DC00"/>
+<ConfirmationBendAccuracyLevel unit="Enumeration" value="Low"/>
+<Note unit="Text" value=""/>
+<WorkpiecePosition>
+<StaticComponentName unit="Text" value="MainPlane"/>
+<ZPosition unit="MilliMeter" value="1170"/>
+</WorkpiecePosition>
+<SensorBendStepData>
+<SubBendMethod unit="RealNumber" value="0"/>
+<AngleCorrection unit="Degrees" value="0"/>
+<Angle2Correction unit="Degrees" value="0"/>
+<SensorReference1 unit="NaturalNumber" value="0"/>
+<SensorReference2 unit="NaturalNumber" value="0"/>
+<CrowningReference unit="NaturalNumber" value="0"/>
+<SensorBendReference unit="NaturalNumber" value="1"/>
+<BendMode unit="RealNumber" value="0"/>
+<VerifyInterval unit="RealNumber" value="0"/>
+</SensorBendStepData>
+<DeformableSystemState>
+<BendAngle unit="Degrees" value="90"/>
+<BendDepth unit="MilliMeter" value="4.680721"/>
+<BendDepthMean unit="MilliMeter" value="4.680721"/>
+<BendDepthRight unit="MilliMeter" value="4.680721"/>
+<BendLength unit="MilliMeter" value="1710"/>
+<EffectiveBendLength unit="MilliMeter" value="1710"/>
+<BendMethod unit="Enumeration" value="AirBend"/>
+<ServoCrowningMethod unit="Enumeration" value="Dynamic"/>
+<DeformingForce unit="KiloNewton" value="327.698004"/>
+<HoldTime unit="Seconds" value="0.1"/>
+<CrowningAxis>
+<AxisName unit="Text" value="CROWN"/>
+<LinearAxisPosition unit="MilliMeter" value="15"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+</CrowningAxis>
+<YAxis>
+<AxisName unit="Text" value="Y"/>
+<LinearAxisPosition unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<DecompressionDistance unit="MilliMeter" value="0.09831"/>
+<DecompressionSpeed unit="MilliMeterPerSecond" value="10"/>
+<DecompressionComputationMethod unit="Enumeration" value="Computed"/>
+<Mute unit="MilliMeter" value="14"/>
+<MutePosition unit="MilliMeter" value="382.99991"/>
+<YOpening unit="MilliMeter" value="10"/>
+<Parallelism unit="MilliMeter" value="0"/>
+<PressingSpeed unit="MilliMeterPerSecond" value="10"/>
+<ApproachSpeed unit="MilliMeterPerSecond" value="5"/>
+<YAxisCorrectionLeft unit="Degrees" value="-5"/>
+<YAxisCorrectionRight unit="Degrees" value="-5"/>
+<YAxisUserCorrectionLeft unit="Degrees" value="-5"/>
+<YAxisUserCorrectionRight unit="Degrees" value="-5"/>
+</YAxis>
+</DeformableSystemState>
+<GaugeSystemState>
+<DelayTime unit="Seconds" value="0"/>
+<GaugeCode unit="Enumeration" value="UpperDeadPoint"/>
+<WaitForRetract unit="Enumeration" value="No"/>
+<RAxis>
+<AxisName unit="Text" value="R"/>
+<LinearAxisPosition unit="MilliMeter" value="60.00105"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<RelativeAxisPosition unit="MilliMeter" value="0.00095"/>
+</RAxis>
+<XAxis>
+<AxisName unit="Text" value="X"/>
+<LinearAxisPosition unit="MilliMeter" value="18.19018"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<Positioning unit="Enumeration" value="Absolute"/>
+</XAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy1"/>
+<LinearAxisPosition unit="MilliMeter" value="1215.99995"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy2"/>
+<LinearAxisPosition unit="MilliMeter" value="2834.00005"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<GaugeStopContact>
+<WorkpieceContact>
+<StaticComponentSideContact>
+<SideContactFraction unit="RealNumber" value="0.026901"/>
+<SideReference unit="Line" value="18 0 18 1710 false"/>
+<SideRelativeContactPoint unit="Position" value="0 1618.00005 1.999 0 0 1 0"/>
+<StaticComponentName unit="Text" value="SC00"/>
+</StaticComponentSideContact>
+</WorkpieceContact>
+<GaugeFingerContact>
+<GaugeFingerContactPoint unit="Position" value="46 1.99805 0 0 0 1 0"/>
+<GaugeFingerReference unit="Text" value="Finger 0"/>
+<GaugeSurfaceFeatureContact>
+<GaugeSurfaceFeatureContactPoint unit="Position" value="46 1.99805 0 0 0 1 0"/>
+<GaugeContactFeatureReference unit="Text" value="0"/>
+</GaugeSurfaceFeatureContact>
+</GaugeFingerContact>
+</GaugeStopContact>
+<GaugeStopContact>
+<WorkpieceContact>
+<StaticComponentSideContact>
+<SideContactFraction unit="RealNumber" value="0.973099"/>
+<SideReference unit="Line" value="18 0 18 1710 false"/>
+<SideRelativeContactPoint unit="Position" value="0 91.99995 1.999 0 0 1 0"/>
+<StaticComponentName unit="Text" value="SC00"/>
+</StaticComponentSideContact>
+</WorkpieceContact>
+<GaugeFingerContact>
+<GaugeFingerContactPoint unit="Position" value="-46 1.99805 0 0 0 1 0"/>
+<GaugeFingerReference unit="Text" value="Finger 1"/>
+<GaugeSurfaceFeatureContact>
+<GaugeSurfaceFeatureContactPoint unit="Position" value="-46 1.99805 0 0 0 1 0"/>
+<GaugeContactFeatureReference unit="Text" value="0"/>
+</GaugeSurfaceFeatureContact>
+</GaugeFingerContact>
+</GaugeStopContact>
+</GaugeSystemState>
+<GeneralPurposeState>
+<RAxis>
+<AxisName unit="Text" value="R"/>
+<LinearAxisPosition unit="MilliMeter" value="60.00105"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<RelativeAxisPosition unit="MilliMeter" value="0.00095"/>
+</RAxis>
+<XAxis>
+<AxisName unit="Text" value="X"/>
+<LinearAxisPosition unit="MilliMeter" value="18.19018"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+<Positioning unit="Enumeration" value="Absolute"/>
+</XAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy1"/>
+<LinearAxisPosition unit="MilliMeter" value="1215.99995"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+<ZAxis>
+<AxisName unit="Text" value="ZDummy2"/>
+<LinearAxisPosition unit="MilliMeter" value="2834.00005"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</ZAxis>
+</GeneralPurposeState>
+<ToolSetupState>
+<IAxis>
+<AxisName unit="Text" value="I"/>
+<LinearAxisPosition unit="MilliMeter" value="0"/>
+<AxisCorrection unit="MilliMeter" value="0"/>
+<AxisRetract unit="MilliMeter" value="0"/>
+<AxisSpeed unit="MilliMeterPerSecond" value="100"/>
+</IAxis>
+</ToolSetupState>
+<BendStepViewState>
+<ViewDimension unit="Enumeration" value="None"/>
+<BendStepVisibility unit="Enumeration" value="All"/>
+<CameraState>
+<CameraPosition unit="Point" value="0 0 0"/>
+<FocusPoint unit="Point" value="0 0 0"/>
+</CameraState>
+</BendStepViewState>
+</BendStep>
+<signature>e2427305ddcf7062310a7b82d7a1d6c722dad8e32a3534f752fddb6feb7fe9f1</signature>
+</BendSequence>
+</delem:data>
+</xsl:stylesheet>
