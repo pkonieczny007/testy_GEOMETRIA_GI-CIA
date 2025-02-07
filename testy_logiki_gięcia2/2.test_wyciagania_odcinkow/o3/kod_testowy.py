@@ -1,20 +1,29 @@
 import pandas as pd
+import xml.etree.ElementTree as ET
+import math
+import os
+
+# Funkcja normalizująca kąt do zakresu [-180, 180]
+def normalize_angle(angle_deg):
+    if angle_deg > 180:
+        return angle_deg - 360
+    return angle_deg
 
 def compute_inside_dimensions(file_name, df_odcinki):
     """
-    Dla danego pliku (Nazwa pliku) z wyniki_odcinki_v3.xlsx
-    pobiera wiersze dla odcinek nr 2 i dzieli je na:
-      - bazowe wartości (z StaticComponentHull),
-      - wartości DC (z ShorteningContour) – dla komponentów zaczynających się od "DC".
-    Następnie, przyjmując, że liczba wartości bazowych = n, wylicza nowe wymiary wg:
-      * Jeśli n == 2 i jest 1 wartość DC:
-             new[0] = baza[0] + DC[0]
-             new[1] = baza[1] + DC[0]
-      * Jeśli n > 2 i liczba wartości DC = n - 1:
-             new[0] = baza[0] + DC[0]
-             dla i = 1..n-2: new[i] = DC[i-1] + baza[i] + DC[i]
-             new[n-1] = baza[-1] + DC[-1]
-    Zwraca ciąg liczb (oddzielonych przecinkiem) z wartościami zaokrąglonymi do 6 miejsc.
+    Dla danego detalu (file_name) z pliku wyniki_odcinki_v3.xlsx
+    pobiera wiersze dla odcinka nr 2 i dzieli je na:
+      - bazowe wartości (pochodzące z StaticComponentHull)
+      - wartości DC (pochodzące z ShorteningContour, dla których Komponent zaczyna się od "DC")
+    Następnie wylicza nowe wymiary wewnętrzne wg:
+      - Jeśli mamy 2 bazowe wartości i 1 DC:
+            new[0] = baza[0] + DC[0]
+            new[1] = baza[1] + DC[0]
+      - Jeśli mamy więcej niż 2 wartości (n > 2) i liczba DC = n - 1:
+            new[0] = baza[0] + DC[0]
+            dla i = 1..(n-2): new[i] = DC[i-1] + baza[i] + DC[i]
+            new[n-1] = baza[-1] + DC[-1]
+    Zwraca ciąg liczb oddzielonych przecinkami (zaokrąglonych do 6 miejsc).
     """
     df_file = df_odcinki[df_odcinki["Nazwa pliku"] == file_name]
     df_seg2 = df_file[df_file["Odcinek nr"] == 2]
@@ -29,7 +38,7 @@ def compute_inside_dimensions(file_name, df_odcinki):
         except:
             pass
             
-    # Pobieramy wartości DC z ShorteningContour, dla których "Komponent" zaczyna się od "DC"
+    # Pobieramy wartości DC z ShorteningContour (tylko te, których Komponent zaczyna się od "DC")
     df_dc = df_seg2[(df_seg2["Źródło outline"] == "ShorteningContour") &
                     (df_seg2["Komponent"].str.startswith("DC"))]
     dc_values = []
@@ -50,33 +59,71 @@ def compute_inside_dimensions(file_name, df_odcinki):
             computed_dims.append(dc_values[i-1] + base_values[i] + dc_values[i])
         computed_dims.append(base_values[-1] + dc_values[-1])
     else:
-        # Jeśli nie pasuje do oczekiwanego schematu, zwracamy bazowe wartości
-        computed_dims = base_values
+        computed_dims = base_values  # jeżeli schemat nie pasuje, zwracamy bazę
     
     return ",".join(str(round(x, 6)) for x in computed_dims)
 
 def compute_dc_shortening(file_name, df_odcinki):
     """
-    Dla danego pliku (Nazwa pliku) z wyniki_odcinki_v3.xlsx
-    pobiera wiersze dla odcinek nr 2, dla których:
-      - "Źródło outline" = "ShorteningContour"
-      - "Komponent" zaczyna się od "DC"
-    Zwraca ciąg w postaci "DC00=<value>, DC01=<value>, ..." gdzie <value> to wartość "Długość łuku"
-    zaokrąglona do 6 miejsc.
+    Dla danego detalu (file_name) z pliku wyniki_odcinki_v3.xlsx
+    pobiera wiersze dla odcinka nr 2, gdzie "Źródło outline" to "ShorteningContour"
+    i Komponent zaczyna się od "DC". Zwraca ciąg wartości z kolumny "Długość łuku"
+    oddzielonych przecinkami, zaokrąglonych do 2 miejsc (np. "4.55,3.82,3.82").
     """
     df_file = df_odcinki[df_odcinki["Nazwa pliku"] == file_name]
     df_dc = df_file[(df_file["Odcinek nr"] == 2) &
                     (df_file["Źródło outline"] == "ShorteningContour") &
                     (df_file["Komponent"].str.startswith("DC"))]
-    dc_items = []
+    dc_values = []
     for _, row in df_dc.iterrows():
-        comp = row["Komponent"]
         try:
             val = float(str(row["Długość łuku"]).replace(',', '.'))
-            dc_items.append(f"{comp}={round(val, 6)}")
+            dc_values.append(val)
         except:
             pass
-    return ", ".join(dc_items)
+    return ",".join(str(round(x, 2)) for x in dc_values)
+
+def compute_bending_angles_from_xml(file_name):
+    """
+    Dla danego pliku XML (np. "prd.40047020.dld") pobiera elementy VDeformableComponent,
+    których WorkpieceComponentName zaczyna się od "DC". Dla takich elementów:
+      - Próbuje odczytać kąt gięcia z elementu "VDeformableComponentAngle"
+      - Jeśli brak, sprawdza "VBendDeformation/AngleAfter"
+      - Normalizuje kąt (jeśli > 180, odejmuje 360)
+      - Zaokrągla wynik do całości
+    Zwraca ciąg kątów oddzielonych przecinkami (np. "-90,150").
+    """
+    try:
+        tree = ET.parse(file_name)
+        root = tree.getroot()
+    except ET.ParseError:
+        return ""
+    angles = []
+    for v in root.findall(".//VDeformableComponent"):
+        comp_elem = v.find("WorkpieceComponentName")
+        if comp_elem is not None:
+            comp_name = comp_elem.attrib.get("value", "")
+            if comp_name.startswith("DC"):
+                angle_after = 0.0
+                angle_elem = v.find("VDeformableComponentAngle")
+                if angle_elem is not None:
+                    try:
+                        angle_after = float(angle_elem.attrib.get("value", "0"))
+                    except ValueError:
+                        angle_after = 0.0
+                # Jeśli nie ma VDeformableComponentAngle, sprawdzamy VBendDeformation/AngleAfter
+                deformation_elem = v.find("VBendDeformation")
+                if deformation_elem is not None:
+                    angle_after_elem = deformation_elem.find("AngleAfter")
+                    if angle_after_elem is not None:
+                        try:
+                            angle_after = float(angle_after_elem.attrib.get("value", "0"))
+                        except ValueError:
+                            pass
+                angle_norm = normalize_angle(angle_after)
+                # Zaokrąglamy do całości (bez miejsc po przecinku)
+                angles.append(int(round(angle_norm)))
+    return ",".join(str(x) for x in angles)
 
 def main():
     try:
@@ -86,26 +133,34 @@ def main():
         print("Błąd wczytywania plików Excel:", e)
         return
     
+    # Tworzymy kopię danych z pliku podsumowującego
     df_test = df_zw.copy()
     computed_dimensions_list = []
     dc_shortening_list = []
+    bending_angles_list = []
     
     for idx, row in df_test.iterrows():
         file_name = row["Nazwa pliku"]
         typ = str(row["Typ"]).strip().lower()
-        # Jeśli typ to "inside" – obliczamy nowe wymiary (można też modyfikować dla innych typów)
+        # Dla typu "inside" wyliczamy nowe wymiary (metoda compute_inside_dimensions)
         if typ == "inside":
             computed_dim = compute_inside_dimensions(file_name, df_odcinki)
             computed_dimensions_list.append(computed_dim)
         else:
             computed_dimensions_list.append("")
         
-        # Obliczamy wartości DC shortening dla odcinka nr 2
+        # Pobieramy ciąg wartości DC shortening
         dc_val = compute_dc_shortening(file_name, df_odcinki)
         dc_shortening_list.append(dc_val)
+        
+        # Pobieramy kąty gięcia z pliku XML przy użyciu logiki z przykładowego skryptu
+        angles_val = compute_bending_angles_from_xml(file_name)
+        bending_angles_list.append(angles_val)
     
+    # Dodajemy nowe kolumny do df_test
     df_test["Wymiary wewnętrzne (test)"] = computed_dimensions_list
-    df_test["DC Shortening"] = dc_shortening_list
+    df_test["DC Shortening (test)"] = dc_shortening_list
+    df_test["Kąty gięcia (test)"] = bending_angles_list
     
     try:
         df_test.to_excel("TESTY.xlsx", index=False)
