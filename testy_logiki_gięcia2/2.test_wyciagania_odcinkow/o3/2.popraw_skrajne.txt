@@ -8,3 +8,24 @@ Wg mnie powodem jest zle okreslanie wymiarow skrajnych
 
 interesuje nas czy Długość łuku jest skrajna czyli czy dochodzi do niego jedno gięcie czy 2 giecia DC
 ShorteningContour
+
+gdy
+MainPlane - skrajne
+SC00 -nieskrajne
+SC01 - skrajne
+
+wtedy bierzemy odcinek nr2 
+
+95,44915 
+17,627265
+32,178115
+I dodajemy ShorteningContour
+
+np 
+DC00
+DC01
+
+wyniki przykladu 
+95,44915 + DC00
+DC00 + 17,627265 +DC01
+DC01 + 32,178115 +DC01
