@@ -161,6 +161,7 @@ def process_summary(filepath, detailed_rows):
     # Wymiary – próba odczytu z WorkpieceName
     workpiece = root.find(".//Workpiece")
     thickness = None
+    dims_mode = ""
     if workpiece is not None:
         wp_name_elem = workpiece.find("WorkpieceName")
         wp_thickness_elem = workpiece.find("WorkpieceThickness")
@@ -189,8 +190,12 @@ def process_summary(filepath, detailed_rows):
         except ValueError:
             ext_dims = []
     else:
-        # Jeśli nazwa nie zawiera oczekiwanego formatu, wyliczamy wymiary na podstawie MainPlane
-        main_planes = root.findall(".//StaticComponent[WorkpieceComponentName[@value='MainPlane']]")
+        # Jeśli nazwa nie zawiera oczekiwanego formatu, wyliczamy wymiary na podstawie MainPlane.
+        main_planes = []
+        for sc in root.findall(".//StaticComponent"):
+            comp_name_elem = sc.find("WorkpieceComponentName")
+            if comp_name_elem is not None and comp_name_elem.attrib.get("value") == "MainPlane":
+                main_planes.append(sc)
         pts = []
         for mp in main_planes:
             hull = mp.find("StaticComponentPart/StaticComponentHull")
@@ -204,7 +209,7 @@ def process_summary(filepath, detailed_rows):
             ys = [pt[1] for pt in pts]
             width = round(max(xs) - min(xs), 2)
             height = round(max(ys) - min(ys), 2)
-            # Przyjmujemy trzeci wymiar równy grubości
+            # Przyjmujemy trzeci wymiar równy grubości (jeśli dostępna)
             ext_dims = [width, height, thickness if thickness is not None else 0]
         else:
             ext_dims = []
@@ -212,7 +217,7 @@ def process_summary(filepath, detailed_rows):
     if ext_dims and len(ext_dims) == 3:
         summary["Wymiary zewnetrzne"] = ",".join(str(x) for x in ext_dims)
         if dims_mode.lower() == "outside":
-            int_dims = [round(ext_dims[0] - thickness, 3), round(ext_dims[1] - 2*thickness, 3), round(ext_dims[2] - thickness, 3)]
+            int_dims = [round(ext_dims[0] - thickness, 3), round(ext_dims[1] - 2 * thickness, 3), round(ext_dims[2] - thickness, 3)]
         else:
             int_dims = [round(x, 3) for x in ext_dims]
         summary["Wymiary wewnętrzne"] = ",".join(str(x) for x in int_dims)
@@ -270,7 +275,6 @@ def process_summary(filepath, detailed_rows):
             except:
                 continue
             wymiary_list[comp] = val
-    # Sortujemy wg klucza (np. alfabetycznie) i łączymy wartości zaokrąglone do dwóch miejsc
     if wymiary_list:
         wymiary_str = ",".join(str(round(wymiary_list[k],2)) for k in sorted(wymiary_list.keys()))
     else:
