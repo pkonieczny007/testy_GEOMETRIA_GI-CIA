@@ -1,0 +1,10 @@
+<BlankLength unit="MilliMeter" value="141.55786"/> - rozwiniecie
+
+
+
+<PreferredInnerRadius unit="MilliMeter" value="2.81648"/>
+<PreferredInnerRadius unit="MilliMeter" value="2.09998"/>
+
+
+<ActualInnerRadius unit="MilliMeter" value="8.04273"/>
+<ActualInnerRadius unit="MilliMeter" value="6"/>
