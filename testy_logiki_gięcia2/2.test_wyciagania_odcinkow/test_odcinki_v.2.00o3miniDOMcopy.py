@@ -8,8 +8,8 @@ def parse_outline(outline_str):
     """
     Parsuje ciąg znaków z atrybutu 'value' elementu Outline.
     Obsługuje dwa formaty:
-      – standardowy, gdzie pierwszy token to liczba segmentów,
-      – oraz format z dodatkowym tokenem "Outline" (dla VDeformableComponentHulls).
+      - format standardowy (pierwszy token – liczba segmentów)
+      - format z tokenem "Outline" (dla VDeformableComponentHulls)
     Zwraca listę krotek:
        (X1, Y1, X2, Y2, is_arc, chord_length)
     """
@@ -35,12 +35,10 @@ def parse_outline(outline_str):
     for i in range(n_segments):
         idx = start_index + i * 5
         try:
-            # Zamieniamy ewentualne przecinki na kropki
             x1 = float(tokens[idx].replace(',', '.'))
             y1 = float(tokens[idx+1].replace(',', '.'))
             x2 = float(tokens[idx+2].replace(',', '.'))
             y2 = float(tokens[idx+3].replace(',', '.'))
-            # Przyjmujemy, że "true"/"prawda" oznacza True – pozostałe traktujemy jako False
             is_arc = tokens[idx+4].lower() in ["true", "prawda"]
         except (ValueError, IndexError):
             print("Błąd przy parsowaniu segmentu:", tokens[idx:idx+5])
@@ -130,17 +128,16 @@ def process_file(filepath):
 
 def process_summary(filepath, detailed_rows):
     """
-    Przetwarza jeden plik XML i zwraca słownik z danymi podsumowania:
+    Przetwarza plik XML i zwraca słownik z danymi podsumowania:
       - Nazwa pliku
-      - Liczba odcinkow (liczba BendStep + 1)
-      - Wymiary zewnetrzne (pobrane z WorkpieceName – zakładamy format "A x B x C x T")
-      - Wymiary wewnętrzne (dla zewnetrznego wymiarowania: [A-T, B-2*T, C-T])
-      - Promień wewnętrzny (wszystkie ActualInnerRadius)
-      - Długość złamu (pobrana z pierwszego BendStep, element BendLength)
-      - Rozwinięcie wyliczeniowe – suma długości odcinków o numerze 2 z:
-           StaticComponentHull (dla MainPlane, SC00, SC01)
-         oraz VDeformableComponentHulls (dla komponentów zaczynających się od "DC")
-      - Rozwinięcie z pliku – wartość BlankLength z BendSequence
+      - Liczba odcinków (liczba BendStep + 1)
+      - Wymiary zewnetrzne, Wymiary wewnętrzne
+      - Promień wewnętrzny
+      - Długość złamu (pierwszy BendLength)
+      - Rozwinięcie wyliczeniowe – suma długości odcinka nr 2 z wybranych źródeł
+      - Rozwinięcie z pliku – BlankLength z BendSequence
+      - Wymiary – dla każdego StaticComponentHull (odcinek nr 2) – zaokrąglone do dwóch miejsc po przecinku
+      - Łuki – dla każdego VDeformableComponentHulls (odcinek nr 1) – zaokrąglone do jednej cyfry po przecinku
     """
     summary = {}
     filename = os.path.basename(filepath)
@@ -153,7 +150,7 @@ def process_summary(filepath, detailed_rows):
         print(f"Błąd parsowania pliku {filepath}: {e}")
         return summary
 
-    # Liczba odcinkow = liczba BendStep + 1
+    # Liczba odcinków = liczba BendStep + 1
     bend_sequence = root.find(".//BendSequence")
     if bend_sequence is not None:
         bend_steps = bend_sequence.findall("BendStep")
@@ -161,38 +158,64 @@ def process_summary(filepath, detailed_rows):
     else:
         summary["Liczba odcinkow"] = None
 
-    # Wymiary – pobieramy nazwę detalu, grubość i tryb wymiarowania
+    # Wymiary – próba odczytu z WorkpieceName
     workpiece = root.find(".//Workpiece")
+    thickness = None
     if workpiece is not None:
         wp_name_elem = workpiece.find("WorkpieceName")
         wp_thickness_elem = workpiece.find("WorkpieceThickness")
         wp_dims_elem = workpiece.find("WorkpieceDimensions")
-        if wp_name_elem is not None and wp_thickness_elem is not None and wp_dims_elem is not None:
+        if wp_thickness_elem is not None:
+            try:
+                thickness = float(wp_thickness_elem.attrib.get("value", "0").replace(',', '.'))
+            except ValueError:
+                thickness = 0
+        dims_mode = wp_dims_elem.attrib.get("value", "") if wp_dims_elem is not None else ""
+        if wp_name_elem is not None:
             wp_name = wp_name_elem.attrib.get("value", "")
-            thickness = float(wp_thickness_elem.attrib.get("value", "0").replace(',', '.'))
-            dims_mode = wp_dims_elem.attrib.get("value", "")
-            # Przykładowo: "70x60x20x2"
-            parts = wp_name.split("x")
-            if len(parts) >= 3:
-                try:
-                    ext_dims = [float(parts[0].replace(',', '.')), 
-                                float(parts[1].replace(',', '.')), 
-                                float(parts[2].replace(',', '.'))]
-                except ValueError:
-                    ext_dims = [None, None, None]
-                summary["Wymiary zewnetrzne"] = ",".join(str(x) for x in ext_dims)
-                if dims_mode.lower() == "outside":
-                    # Zakładamy: wymiary wewnętrzne = [A - thickness, B - 2*thickness, C - thickness]
-                    int_dims = [ext_dims[0] - thickness, ext_dims[1] - 2 * thickness, ext_dims[2] - thickness]
-                else:
-                    int_dims = ext_dims  # lub inna logika, gdyby wymiarowano wewnętrznie
-                summary["Wymiary wewnętrzne"] = ",".join(str(round(x, 3)) for x in int_dims)
-            else:
-                summary["Wymiary zewnetrzne"] = ""
-                summary["Wymiary wewnętrzne"] = ""
         else:
-            summary["Wymiary zewnetrzne"] = ""
-            summary["Wymiary wewnętrzne"] = ""
+            wp_name = ""
+    else:
+        wp_name = ""
+        dims_mode = ""
+        thickness = 0
+
+    parts = wp_name.split("x")
+    if len(parts) >= 3:
+        try:
+            ext_dims = [float(parts[0].replace(',', '.')),
+                        float(parts[1].replace(',', '.')),
+                        float(parts[2].replace(',', '.'))]
+        except ValueError:
+            ext_dims = []
+    else:
+        # Jeśli nazwa nie zawiera oczekiwanego formatu, wyliczamy wymiary na podstawie MainPlane
+        main_planes = root.findall(".//StaticComponent[WorkpieceComponentName[@value='MainPlane']]")
+        pts = []
+        for mp in main_planes:
+            hull = mp.find("StaticComponentPart/StaticComponentHull")
+            if hull is not None:
+                segs = parse_outline(hull.attrib.get("value", ""))
+                for (x1, y1, x2, y2, _, _) in segs:
+                    pts.append((x1, y1))
+                    pts.append((x2, y2))
+        if pts:
+            xs = [pt[0] for pt in pts]
+            ys = [pt[1] for pt in pts]
+            width = round(max(xs) - min(xs), 2)
+            height = round(max(ys) - min(ys), 2)
+            # Przyjmujemy trzeci wymiar równy grubości
+            ext_dims = [width, height, thickness if thickness is not None else 0]
+        else:
+            ext_dims = []
+
+    if ext_dims and len(ext_dims) == 3:
+        summary["Wymiary zewnetrzne"] = ",".join(str(x) for x in ext_dims)
+        if dims_mode.lower() == "outside":
+            int_dims = [round(ext_dims[0] - thickness, 3), round(ext_dims[1] - 2*thickness, 3), round(ext_dims[2] - thickness, 3)]
+        else:
+            int_dims = [round(x, 3) for x in ext_dims]
+        summary["Wymiary wewnętrzne"] = ",".join(str(x) for x in int_dims)
     else:
         summary["Wymiary zewnetrzne"] = ""
         summary["Wymiary wewnętrzne"] = ""
@@ -226,17 +249,49 @@ def process_summary(filepath, detailed_rows):
             blank_length = blank_elem.attrib.get("value", "").replace(',', '.')
     summary["Rozwinięcie z pliku"] = blank_length
 
-    # Rozwinięcie wyliczeniowe – suma odcinków o numerze 2 z wybranych elementów
+    # Rozwinięcie wyliczeniowe – suma odcinka nr 2 z wybranych źródeł
     computed_unfolding = 0
     for row in detailed_rows:
-        # Format wiersza: [filename, comp_name, źródło, odcinek_nr, ..., Długość łuku (index 10), Skrajny (index 11)]
-        if row[0] == filename and row[3] == 2:
-            if row[2] in ["StaticComponentHull", "VDeformableComponentHulls"]:
-                try:
-                    computed_unfolding += float(row[10])
-                except:
-                    pass
+        # Wiersz: [filename, Komponent, źródło, odcinek_nr, ..., Długość łuku (index 10), Skrajny (index 11)]
+        if row[0] == filename and row[2] in ["StaticComponentHull", "VDeformableComponentHulls"] and row[3] == 2:
+            try:
+                computed_unfolding += float(row[10])
+            except:
+                pass
     summary["Rozwinięcie wyliczeniowe"] = round(computed_unfolding, 6) if computed_unfolding else None
+
+    # Nowa kolumna "Wymiary" – zbieramy, dla każdego unikalnego StaticComponentHull, odcinek nr 2
+    wymiary_list = {}
+    for row in detailed_rows:
+        if row[0] == filename and row[2] == "StaticComponentHull" and row[3] == 2:
+            comp = row[1]
+            try:
+                val = float(row[10])
+            except:
+                continue
+            wymiary_list[comp] = val
+    # Sortujemy wg klucza (np. alfabetycznie) i łączymy wartości zaokrąglone do dwóch miejsc
+    if wymiary_list:
+        wymiary_str = ",".join(str(round(wymiary_list[k],2)) for k in sorted(wymiary_list.keys()))
+    else:
+        wymiary_str = ""
+    summary["Wymiary"] = wymiary_str
+
+    # Nowa kolumna "Łuki" – dla każdego unikalnego VDeformableComponentHulls, odcinek nr 1
+    luke_list = {}
+    for row in detailed_rows:
+        if row[0] == filename and row[2] == "VDeformableComponentHulls" and row[3] == 1:
+            comp = row[1]
+            try:
+                val = float(row[10])
+            except:
+                continue
+            luke_list[comp] = val
+    if luke_list:
+        luke_str = ",".join(str(round(luke_list[k],1)) for k in sorted(luke_list.keys()))
+    else:
+        luke_str = ""
+    summary["Łuki"] = luke_str
 
     return summary
 
@@ -255,21 +310,24 @@ def main():
         summary = process_summary(filepath, detailed_rows)
         summaries.append(summary)
 
-    # Zapis wyników szczegółowych do pliku wyniki_odcinki.xlsx
+    # Zapis wyników szczegółowych do pliku wyniki_odcinki_v3.xlsx
     detailed_columns = [
         "Nazwa pliku", "Komponent", "Źródło outline", "Odcinek nr", 
         "X1", "Y1", "X2", "Y2", "Łuk?", "Długość cięciwy", "Długość łuku", "Skrajny"
     ]
     df_detailed = pd.DataFrame(all_detailed, columns=detailed_columns)
-    output_detailed = "wyniki_odcinki.xlsx"
+    output_detailed = "wyniki_odcinki_v3.xlsx"
     df_detailed.to_excel(output_detailed, index=False)
     print(f"Wyniki szczegółowe zapisano w pliku '{output_detailed}'.")
 
-    # Zapis wyników podsumowania do pliku wyniki_zw.xlsx
-    summary_columns = ["Nazwa pliku", "Liczba odcinkow", "Wymiary zewnetrzne", "Wymiary wewnętrzne",
-                       "Promień wewnętrzny", "Długość złamu", "Rozwinięcie wyliczeniowe", "Rozwinięcie z pliku"]
+    # Zapis wyników podsumowania do pliku wyniki_zw_v3.xlsx
+    summary_columns = [
+        "Nazwa pliku", "Liczba odcinkow", "Wymiary zewnetrzne", "Wymiary wewnętrzne",
+        "Promień wewnętrzny", "Długość złamu", "Rozwinięcie wyliczeniowe", "Rozwinięcie z pliku",
+        "Wymiary", "Łuki"
+    ]
     df_summary = pd.DataFrame(summaries, columns=summary_columns)
-    output_summary = "wyniki_zw.xlsx"
+    output_summary = "wyniki_zw_v3.xlsx"
     df_summary.to_excel(output_summary, index=False)
     print(f"Wyniki podsumowania zapisano w pliku '{output_summary}'.")
 
